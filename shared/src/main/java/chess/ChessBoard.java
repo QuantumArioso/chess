@@ -42,7 +42,25 @@ public class ChessBoard {
     private ChessPiece wPawnH = new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.PAWN);
 
     public ChessBoard() {
-        
+
+    }
+
+    @Override
+    public String toString() {
+        String output = "";
+        for (int i = 0; i < 8; i++) {
+            output += "|";
+            for (int j = 0; j < 8; j++) {
+                if (squares[i][j] != null) {
+                    output += squares[i][j].toString() + "|";
+                }
+                else {
+                    output += " |";
+                }
+            }
+            output += "\n";
+        }
+        return output;
     }
 
     /**
@@ -52,7 +70,8 @@ public class ChessBoard {
      * @param piece    the piece to add
      */
     public void addPiece(ChessPosition position, ChessPiece piece) {
-        squares[position.getRow()][position.getColumn()] = piece;
+        // the positions passed in are 1-8; my indexing is 0-7
+        squares[position.getRow()-1][position.getColumn()-1] = piece;
     }
 
     /**
@@ -63,7 +82,7 @@ public class ChessBoard {
      * position
      */
     public ChessPiece getPiece(ChessPosition position) {
-        return squares[position.getRow()][position.getColumn()];
+        return squares[position.getRow()-1][position.getColumn()-1];
     }
 
     /**
@@ -72,37 +91,37 @@ public class ChessBoard {
      */
     public void resetBoard() {
         // puts pieces where they belong when game starts
-        squares[0][0] = bRookA;
-        squares[0][1] = bKnightA;
-        squares[0][2] = bBishopA;
-        squares[0][3] = bQueen;
-        squares[0][4] = bKing;
-        squares[0][5] = bBishopB;
-        squares[0][6] = bKnightB;
-        squares[0][7] = bRookB;
-        squares[1][0] = bPawnA;
-        squares[1][1] = bPawnB;
-        squares[1][2] = bPawnC;
-        squares[1][3] = bPawnD;
-        squares[1][4] = bPawnE;
-        squares[1][5] = bPawnF;
-        squares[1][6] = bPawnG;
-        squares[1][7] = bPawnH;
-        squares[6][0] = wPawnA;
-        squares[6][1] = wPawnB;
-        squares[6][2] = wPawnC;
-        squares[6][3] = wPawnD;
-        squares[6][4] = wPawnE;
-        squares[6][5] = wPawnF;
-        squares[6][6] = wPawnG;
-        squares[6][7] = wPawnH;
-        squares[7][0] = wRookA;
-        squares[7][1] = wKnightA;
-        squares[7][2] = wBishopA;
-        squares[7][3] = wQueen;
-        squares[7][4] = wKing;
-        squares[7][5] = wBishopB;
-        squares[7][6] = wKnightB;
-        squares[7][7] = wRookB;
+        squares[0][0] = wRookA;
+        squares[0][1] = wKnightA;
+        squares[0][2] = wBishopA;
+        squares[0][3] = wQueen;
+        squares[0][4] = wKing;
+        squares[0][5] = wBishopB;
+        squares[0][6] = wKnightB;
+        squares[0][7] = wRookB;
+        squares[1][0] = wPawnA;
+        squares[1][1] = wPawnB;
+        squares[1][2] = wPawnC;
+        squares[1][3] = wPawnD;
+        squares[1][4] = wPawnE;
+        squares[1][5] = wPawnF;
+        squares[1][6] = wPawnG;
+        squares[1][7] = wPawnH;
+        squares[6][0] = bPawnA;
+        squares[6][1] = bPawnB;
+        squares[6][2] = bPawnC;
+        squares[6][3] = bPawnD;
+        squares[6][4] = bPawnE;
+        squares[6][5] = bPawnF;
+        squares[6][6] = bPawnG;
+        squares[6][7] = bPawnH;
+        squares[7][0] = bRookA;
+        squares[7][1] = bKnightA;
+        squares[7][2] = bBishopA;
+        squares[7][3] = bQueen;
+        squares[7][4] = bKing;
+        squares[7][5] = bBishopB;
+        squares[7][6] = bKnightB;
+        squares[7][7] = bRookB;
     }
 }
