@@ -156,4 +156,12 @@ public class ChessBoard {
         return x > 0 && x <= squares.length && y > 0 && y <= squares[0].length;
     }
 
+    /**
+     * Checks if given position is not occupied
+     * @param position position to check
+     * @return true if empty, false otherwise
+     */
+    public boolean isEmpty(ChessPosition position) {
+        return squares[position.getRow()][position.getColumn()] != null;
+    }
 }
