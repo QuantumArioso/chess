@@ -20,6 +20,18 @@ public class ChessPiece {
         this.type = type;
     }
 
+    /**
+     * The various different chess piece options
+     */
+    public enum PieceType {
+        KING,
+        QUEEN,
+        BISHOP,
+        KNIGHT,
+        ROOK,
+        PAWN
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -35,18 +47,6 @@ public class ChessPiece {
     @Override
     public int hashCode() {
         return Objects.hash(pieceColor, type);
-    }
-
-    /**
-     * The various different chess piece options
-     */
-    public enum PieceType {
-        KING,
-        QUEEN,
-        BISHOP,
-        KNIGHT,
-        ROOK,
-        PAWN
     }
 
     @Override
