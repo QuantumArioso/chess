@@ -157,11 +157,19 @@ public class ChessBoard {
     }
 
     /**
-     * Checks if given position is not occupied
-     * @param position position to check
-     * @return true if empty, false otherwise
+     * Checks if given position is occupied by a piece on your own team
+     * @param oldPosition current position
+     * @param newPosition position to check
+     * @return true if empty or occupied by enemy, false otherwise
      */
-    public boolean isEmpty(ChessPosition position) {
-        return squares[position.getRow()][position.getColumn()] != null;
+    public boolean isNotOccupiedBySelf(ChessPosition oldPosition, ChessPosition newPosition) {
+        if (getPiece(newPosition) == null) {
+            return true;
+        }
+
+        ChessPiece piece = getPiece(newPosition);
+        ChessGame.TeamColor oldColor = getPiece(oldPosition).getTeamColor();
+        ChessGame.TeamColor newColor = piece.getTeamColor();
+        return oldColor != newColor;
     }
 }

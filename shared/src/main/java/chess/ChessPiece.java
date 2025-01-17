@@ -115,6 +115,15 @@ public class ChessPiece {
      * @return Collection of valid moves
      */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
-        return new ArrayList<>();
+        Collection<ChessMove> moves;
+        if (type == ChessPiece.PieceType.KING) {
+            KingMovesCalculator calculator = new KingMovesCalculator();
+            moves = calculator.pieceMoves(board, myPosition);
+        }
+        else {
+            moves = new ArrayList<>();
+        }
+
+        return moves;
     }
 }

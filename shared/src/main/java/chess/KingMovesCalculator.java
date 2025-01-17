@@ -22,7 +22,7 @@ public class KingMovesCalculator implements PieceMovesCalculator {
         for (int i = x-1; i <= x+1; i++) {
             for (int j = y-1; j <= y+1; j++) {
                 ChessPosition newPosition = new ChessPosition(i, j);
-                if (!newPosition.equals(position) && board.inBounds(newPosition) && board.isEmpty(newPosition)) {
+                if (!newPosition.equals(position) && board.inBounds(newPosition) && board.isNotOccupiedBySelf(position, newPosition)) {
                     possiblePositions.add(newPosition);
                 }
             }
