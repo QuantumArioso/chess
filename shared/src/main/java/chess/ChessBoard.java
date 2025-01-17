@@ -144,4 +144,16 @@ public class ChessBoard {
     public int hashCode() {
         return Objects.hash(Arrays.deepHashCode(squares), bKing, bQueen, bBishopA, bBishopB, bKnightA, bKnightB, bRookA, bRookB, bPawnA, bPawnB, bPawnC, bPawnD, bPawnE, bPawnF, bPawnG, bPawnH, wKing, wQueen, wBishopA, wBishopB, wKnightA, wKnightB, wRookA, wRookB, wPawnA, wPawnB, wPawnC, wPawnD, wPawnE, wPawnF, wPawnG, wPawnH);
     }
+
+    /**
+     * Checks if given position is valid
+     * @param position position to check
+     * @return true if in bounds, false otherwise
+     */
+    public boolean inBounds(ChessPosition position) {
+        int x = position.getRow();
+        int y = position.getColumn();
+        return x > 0 && x <= squares.length && y > 0 && y <= squares[0].length;
+    }
+
 }
