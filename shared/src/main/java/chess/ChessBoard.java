@@ -172,4 +172,13 @@ public class ChessBoard {
         ChessGame.TeamColor newColor = piece.getTeamColor();
         return oldColor != newColor;
     }
+
+    /**
+     * Checks if given position is not occupied
+     * @param position position to check
+     * @return true if empty, false otherwise
+     */
+    public boolean isEmpty(ChessPosition position) {
+        return squares[position.getRow()][position.getColumn()] == null;
+    }
 }
