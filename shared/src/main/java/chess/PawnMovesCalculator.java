@@ -22,7 +22,10 @@ public class PawnMovesCalculator implements PieceMovesCalculator {
 
         // moveForward first turn
         if ((moveDirection == 1 && position.getRow() == 2) || (moveDirection == -1 && position.getRow() == 7)) {
-            possiblePositions.add(moveForward(board, new ChessPosition(x+moveDirection,y), moveDirection));
+            ChessPosition intermediatePosition = new ChessPosition(x+moveDirection, y);
+            if (board.isNotOccupiedBySelf(position, intermediatePosition)) {
+                possiblePositions.add(moveForward(board, intermediatePosition, moveDirection));
+            }
         }
 
         // capture
@@ -30,8 +33,16 @@ public class PawnMovesCalculator implements PieceMovesCalculator {
 
 
         for (ChessPosition possiblePosition : possiblePositions) {
-            ChessMove move = new ChessMove(position, possiblePosition, null);
-            possibleMoves.add(move);
+            if (possiblePosition != null) {
+                if (possiblePosition.getRow() == 1 || possiblePosition.getRow() == 8) {
+                    possibleMoves.add(new ChessMove(position, possiblePosition, ChessPiece.PieceType.QUEEN));
+                    possibleMoves.add(new ChessMove(position, possiblePosition, ChessPiece.PieceType.BISHOP));
+                    possibleMoves.add(new ChessMove(position, possiblePosition, ChessPiece.PieceType.KNIGHT));
+                    possibleMoves.add(new ChessMove(position, possiblePosition, ChessPiece.PieceType.ROOK));
+                } else {
+                    possibleMoves.add(new ChessMove(position, possiblePosition, null));
+                }
+            }
         }
 
         return possibleMoves;
@@ -45,7 +56,7 @@ public class PawnMovesCalculator implements PieceMovesCalculator {
      * @return the new position of the pawn, or null if it cannot move forward
      */
     public ChessPosition moveForward(ChessBoard board, ChessPosition position, int moveDirection) {
-        ChessPosition newPosition = new ChessPosition(position.getRow(), position.getColumn() + moveDirection);
+        ChessPosition newPosition = new ChessPosition(position.getRow() + moveDirection, position.getColumn());
         if (board.inBounds(newPosition) && board.isEmpty(newPosition)) {
             return newPosition;
         }
@@ -53,15 +64,15 @@ public class PawnMovesCalculator implements PieceMovesCalculator {
     }
 
     public Collection<ChessPosition> capture(ChessBoard board, ChessPosition position, int moveDirection) {
-        ArrayList<ChessPosition> captures = new ArrayList<ChessPosition>();
-        ChessPosition newPositionA = new ChessPosition(position.getRow() - 1, position.getColumn() + moveDirection);
-        ChessPosition newPositionB = new ChessPosition(position.getRow() + 1, position.getColumn() + moveDirection);
+        ArrayList<ChessPosition> captures = new ArrayList<>();
+        ChessPosition newPositionA = new ChessPosition(position.getRow() + moveDirection, position.getColumn() - 1);
+        ChessPosition newPositionB = new ChessPosition(position.getRow() + moveDirection, position.getColumn() + 1);
 
         if (board.inBounds(newPositionA) && !board.isEmpty(newPositionA) && board.isNotOccupiedBySelf(position, newPositionA)) {
             captures.add(newPositionA);
         }
         if (board.inBounds(newPositionB) && !board.isEmpty(newPositionB) && board.isNotOccupiedBySelf(position, newPositionB)) {
-            captures.add(newPositionA);
+            captures.add(newPositionB);
         }
         return captures;
     }

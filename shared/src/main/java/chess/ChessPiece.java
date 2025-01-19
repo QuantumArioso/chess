@@ -120,6 +120,10 @@ public class ChessPiece {
             KingMovesCalculator calculator = new KingMovesCalculator();
             moves = calculator.pieceMoves(board, myPosition);
         }
+        else if (type == ChessPiece.PieceType.PAWN) {
+            PawnMovesCalculator calculator = new PawnMovesCalculator();
+            moves = calculator.pieceMoves(board, myPosition);
+        }
         else {
             moves = new ArrayList<>();
         }

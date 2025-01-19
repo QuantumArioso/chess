@@ -51,7 +51,7 @@ public class ChessBoard {
     @Override
     public String toString() {
         String output = "";
-        for (int i = 0; i < 8; i++) {
+        for (int i = 7; i >= 0; i--) {
             output += "|";
             for (int j = 0; j < 8; j++) {
                 if (squares[i][j] != null) {
@@ -179,6 +179,6 @@ public class ChessBoard {
      * @return true if empty, false otherwise
      */
     public boolean isEmpty(ChessPosition position) {
-        return squares[position.getRow()][position.getColumn()] == null;
+        return squares[position.getRow()-1][position.getColumn()-1] == null;
     }
 }
