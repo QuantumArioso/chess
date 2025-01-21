@@ -128,6 +128,14 @@ public class ChessPiece {
             RookMovesCalculator calculator = new RookMovesCalculator();
             moves = calculator.pieceMoves(board, myPosition);
         }
+        else if (type == ChessPiece.PieceType.BISHOP) {
+            BishopMovesCalculator calculator = new BishopMovesCalculator();
+            moves = calculator.pieceMoves(board, myPosition);
+        }
+        else if (type == ChessPiece.PieceType.QUEEN) {
+            QueenMovesCalculator calculator = new QueenMovesCalculator();
+            moves = calculator.pieceMoves(board, myPosition);
+        }
         else {
             moves = new ArrayList<>();
         }
