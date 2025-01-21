@@ -124,6 +124,10 @@ public class ChessPiece {
             PawnMovesCalculator calculator = new PawnMovesCalculator();
             moves = calculator.pieceMoves(board, myPosition);
         }
+        else if (type == ChessPiece.PieceType.ROOK) {
+            RookMovesCalculator calculator = new RookMovesCalculator();
+            moves = calculator.pieceMoves(board, myPosition);
+        }
         else {
             moves = new ArrayList<>();
         }
