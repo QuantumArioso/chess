@@ -116,11 +116,7 @@ public class ChessPiece {
      */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
         Collection<ChessMove> moves;
-        if (type == ChessPiece.PieceType.KING) {
-            KingMovesCalculator calculator = new KingMovesCalculator();
-            moves = calculator.pieceMoves(board, myPosition);
-        }
-        else if (type == ChessPiece.PieceType.PAWN) {
+        if (type == ChessPiece.PieceType.PAWN) {
             PawnMovesCalculator calculator = new PawnMovesCalculator();
             moves = calculator.pieceMoves(board, myPosition);
         }
@@ -136,8 +132,13 @@ public class ChessPiece {
             QueenMovesCalculator calculator = new QueenMovesCalculator();
             moves = calculator.pieceMoves(board, myPosition);
         }
+        else if (type == ChessPiece.PieceType.KNIGHT) {
+            KnightMovesCalculator calculator = new KnightMovesCalculator();
+            moves = calculator.pieceMoves(board, myPosition);
+        }
         else {
-            moves = new ArrayList<>();
+            KingMovesCalculator calculator = new KingMovesCalculator();
+            moves = calculator.pieceMoves(board, myPosition);
         }
 
         return moves;
