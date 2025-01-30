@@ -51,45 +51,25 @@ public class ChessPiece {
 
     @Override
     public String toString() {
-        if (pieceColor == ChessGame.TeamColor.BLACK) {
-            if (type == ChessPiece.PieceType.KING) {
-                return "k";
-            }
-            else if (type == ChessPiece.PieceType.QUEEN) {
-                return "q";
-            }
-            else if (type == ChessPiece.PieceType.BISHOP) {
-                return "b";
-            }
-            else if (type == ChessPiece.PieceType.KNIGHT) {
-                return "n";
-            }
-            else if (type == ChessPiece.PieceType.ROOK) {
-                return "r";
-            }
-            else {
-                return "p";
-            }
+        if (pieceColor == ChessGame.TeamColor.WHITE) {
+            return switch (type) {
+                case KING -> "K";
+                case PAWN -> "P";
+                case ROOK -> "R";
+                case QUEEN -> "Q";
+                case BISHOP -> "B";
+                default -> "N";
+            };
         }
         else {
-            if (type == ChessPiece.PieceType.KING) {
-                return "K";
-            }
-            else if (type == ChessPiece.PieceType.QUEEN) {
-                return "Q";
-            }
-            else if (type == ChessPiece.PieceType.BISHOP) {
-                return "B";
-            }
-            else if (type == ChessPiece.PieceType.KNIGHT) {
-                return "N";
-            }
-            else if (type == ChessPiece.PieceType.ROOK) {
-                return "R";
-            }
-            else {
-                return "P";
-            }
+            return switch (type) {
+                case KING -> "k";
+                case PAWN -> "p";
+                case ROOK -> "r";
+                case QUEEN -> "q";
+                case BISHOP -> "b";
+                default -> "n";
+            };
         }
     }
 
@@ -116,31 +96,26 @@ public class ChessPiece {
      */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
         Collection<ChessMove> moves;
-        if (type == ChessPiece.PieceType.PAWN) {
-            PawnMovesCalculator calculator = new PawnMovesCalculator();
-            moves = calculator.pieceMoves(board, myPosition);
+        PieceMovesCalculator calculator;
+        switch (type) {
+            case ROOK:
+                calculator = new RookMovesCalculator();
+                return calculator.pieceMoves(board, myPosition);
+            case BISHOP:
+                calculator = new BishopMovesCalculator();
+                return calculator.pieceMoves(board, myPosition);
+            case QUEEN:
+                calculator = new QueenMovesCalculator();
+                return calculator.pieceMoves(board, myPosition);
+            case PAWN:
+                calculator = new PawnMovesCalculator();
+                return calculator.pieceMoves(board, myPosition);
+            case KNIGHT:
+                calculator = new KnightMovesCalculator();
+                return calculator.pieceMoves(board, myPosition);
+            default:
+                calculator = new KingMovesCalculator();
+                return calculator.pieceMoves(board, myPosition);
         }
-        else if (type == ChessPiece.PieceType.ROOK) {
-            RookMovesCalculator calculator = new RookMovesCalculator();
-            moves = calculator.pieceMoves(board, myPosition);
-        }
-        else if (type == ChessPiece.PieceType.BISHOP) {
-            BishopMovesCalculator calculator = new BishopMovesCalculator();
-            moves = calculator.pieceMoves(board, myPosition);
-        }
-        else if (type == ChessPiece.PieceType.QUEEN) {
-            QueenMovesCalculator calculator = new QueenMovesCalculator();
-            moves = calculator.pieceMoves(board, myPosition);
-        }
-        else if (type == ChessPiece.PieceType.KNIGHT) {
-            KnightMovesCalculator calculator = new KnightMovesCalculator();
-            moves = calculator.pieceMoves(board, myPosition);
-        }
-        else {
-            KingMovesCalculator calculator = new KingMovesCalculator();
-            moves = calculator.pieceMoves(board, myPosition);
-        }
-
-        return moves;
     }
 }

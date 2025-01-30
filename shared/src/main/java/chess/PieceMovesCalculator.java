@@ -16,23 +16,29 @@ public interface PieceMovesCalculator {
      * @param yDirection -1 for south, +1 for north, 0 for neither
      * @return ArrayList of possible positions
      */
-    default Collection<ChessPosition> findMoves(ChessBoard board, ChessPosition oldPosition, int y, int x, int xDirection, int yDirection) {
+    default Collection<ChessMove> findMoves(ChessBoard board, ChessPosition oldPosition, int y, int x, int xDirection, int yDirection) {
         y += yDirection;
         x += xDirection;
         ChessPosition newPosition = new ChessPosition(y, x);
-        ArrayList<ChessPosition> newPositions = new ArrayList<>();
+        ArrayList<ChessPosition> possiblePositions = new ArrayList<>();
+        ArrayList<ChessMove> possibleMoves = new ArrayList<>();
 
         while (board.inBounds(newPosition) && board.isEmpty(newPosition)) {
-            newPositions.add(newPosition);
+            possiblePositions.add(newPosition);
             y += yDirection;
             x += xDirection;
             newPosition = new ChessPosition(y, x);
         }
         // check if can capture
         if (board.inBounds(newPosition) && board.isNotOccupiedBySelf(oldPosition, newPosition)) {
-            newPositions.add(newPosition);
+            possiblePositions.add(newPosition);
         }
 
-        return newPositions;
+        for (ChessPosition possiblePosition : possiblePositions) {
+            ChessMove move = new ChessMove(oldPosition, possiblePosition, null);
+            possibleMoves.add(move);
+        }
+
+        return possibleMoves;
     }
 }
