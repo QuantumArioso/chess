@@ -137,12 +137,31 @@ public class ChessBoard {
             return false;
         }
         ChessBoard that = (ChessBoard) o;
-        return Objects.deepEquals(squares, that.squares) && Objects.equals(bKing, that.bKing) && Objects.equals(bQueen, that.bQueen) && Objects.equals(bBishopA, that.bBishopA) && Objects.equals(bBishopB, that.bBishopB) && Objects.equals(bKnightA, that.bKnightA) && Objects.equals(bKnightB, that.bKnightB) && Objects.equals(bRookA, that.bRookA) && Objects.equals(bRookB, that.bRookB) && Objects.equals(bPawnA, that.bPawnA) && Objects.equals(bPawnB, that.bPawnB) && Objects.equals(bPawnC, that.bPawnC) && Objects.equals(bPawnD, that.bPawnD) && Objects.equals(bPawnE, that.bPawnE) && Objects.equals(bPawnF, that.bPawnF) && Objects.equals(bPawnG, that.bPawnG) && Objects.equals(bPawnH, that.bPawnH) && Objects.equals(wKing, that.wKing) && Objects.equals(wQueen, that.wQueen) && Objects.equals(wBishopA, that.wBishopA) && Objects.equals(wBishopB, that.wBishopB) && Objects.equals(wKnightA, that.wKnightA) && Objects.equals(wKnightB, that.wKnightB) && Objects.equals(wRookA, that.wRookA) && Objects.equals(wRookB, that.wRookB) && Objects.equals(wPawnA, that.wPawnA) && Objects.equals(wPawnB, that.wPawnB) && Objects.equals(wPawnC, that.wPawnC) && Objects.equals(wPawnD, that.wPawnD) && Objects.equals(wPawnE, that.wPawnE) && Objects.equals(wPawnF, that.wPawnF) && Objects.equals(wPawnG, that.wPawnG) && Objects.equals(wPawnH, that.wPawnH);
+        return Objects.deepEquals(squares, that.squares) && Objects.equals(bKing, that.bKing) &&
+                Objects.equals(bQueen, that.bQueen) && Objects.equals(bBishopA, that.bBishopA) &&
+                Objects.equals(bBishopB, that.bBishopB) && Objects.equals(bKnightA, that.bKnightA) &&
+                Objects.equals(bKnightB, that.bKnightB) && Objects.equals(bRookA, that.bRookA) &&
+                Objects.equals(bRookB, that.bRookB) && Objects.equals(bPawnA, that.bPawnA) &&
+                Objects.equals(bPawnB, that.bPawnB) && Objects.equals(bPawnC, that.bPawnC) &&
+                Objects.equals(bPawnD, that.bPawnD) && Objects.equals(bPawnE, that.bPawnE) &&
+                Objects.equals(bPawnF, that.bPawnF) && Objects.equals(bPawnG, that.bPawnG) &&
+                Objects.equals(bPawnH, that.bPawnH) && Objects.equals(wKing, that.wKing) &&
+                Objects.equals(wQueen, that.wQueen) && Objects.equals(wBishopA, that.wBishopA) &&
+                Objects.equals(wBishopB, that.wBishopB) && Objects.equals(wKnightA, that.wKnightA) &&
+                Objects.equals(wKnightB, that.wKnightB) && Objects.equals(wRookA, that.wRookA) &&
+                Objects.equals(wRookB, that.wRookB) && Objects.equals(wPawnA, that.wPawnA) &&
+                Objects.equals(wPawnB, that.wPawnB) && Objects.equals(wPawnC, that.wPawnC) &&
+                Objects.equals(wPawnD, that.wPawnD) && Objects.equals(wPawnE, that.wPawnE) &&
+                Objects.equals(wPawnF, that.wPawnF) && Objects.equals(wPawnG, that.wPawnG) &&
+                Objects.equals(wPawnH, that.wPawnH);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(Arrays.deepHashCode(squares), bKing, bQueen, bBishopA, bBishopB, bKnightA, bKnightB, bRookA, bRookB, bPawnA, bPawnB, bPawnC, bPawnD, bPawnE, bPawnF, bPawnG, bPawnH, wKing, wQueen, wBishopA, wBishopB, wKnightA, wKnightB, wRookA, wRookB, wPawnA, wPawnB, wPawnC, wPawnD, wPawnE, wPawnF, wPawnG, wPawnH);
+        return Objects.hash(Arrays.deepHashCode(squares), bKing, bQueen, bBishopA, bBishopB, bKnightA, bKnightB,
+                bRookA, bRookB, bPawnA, bPawnB, bPawnC, bPawnD, bPawnE, bPawnF, bPawnG, bPawnH, wKing, wQueen,
+                wBishopA, wBishopB, wKnightA, wKnightB, wRookA, wRookB, wPawnA, wPawnB, wPawnC, wPawnD, wPawnE,
+                wPawnF, wPawnG, wPawnH);
     }
 
     /**
