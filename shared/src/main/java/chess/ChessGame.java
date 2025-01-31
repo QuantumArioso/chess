@@ -1,5 +1,6 @@
 package chess;
 
+import java.util.ArrayList;
 import java.util.Collection;
 
 /**
@@ -70,26 +71,72 @@ public class ChessGame {
      * @return True if the specified team is in check
      */
     public boolean isInCheck(TeamColor teamColor) {
-        ChessPosition kingPosition = findKingPosition();
-        return true;
+        ChessPosition kingPosition = findKingPosition(teamColor);
+        TeamColor enemyColor = getEnemyTeam(teamColor);
+
+        Collection<ChessPosition> positions = findAllTeamPiecePositions(enemyColor);
+        for (ChessPosition pos : positions) {
+            ChessPiece piece = board.getPiece(pos);
+            if (piece != null) {
+                Collection<ChessMove> moves = piece.pieceMoves(board, pos);
+                for (ChessMove move : moves) {
+                    if (move.getEndPosition().equals(kingPosition)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     /**
      * Searches the board for the current team's king
      * @return the position of current team's king
      */
-    private ChessPosition findKingPosition() {
+    private ChessPosition findKingPosition(TeamColor team) {
+        Collection<ChessPosition> positions = findAllTeamPiecePositions(team);
+        for (ChessPosition pos : positions) {
+            if (board.getPiece(pos).getPieceType().equals(ChessPiece.PieceType.KING)) {
+                return pos;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Finds all of a team's pieces' positions
+     * @param team the color for who's pieces to find
+     * @return the positions of where every piece for a team is
+     */
+    private Collection<ChessPosition> findAllTeamPiecePositions(TeamColor team) {
+        Collection<ChessPosition> positions = new ArrayList<>();
         for (int row = 1; row <= 8; row++) {
             for (int col = 1; col <= 8; col++) {
                 ChessPosition pos = new ChessPosition(row, col);
                 ChessPiece piece = board.getPiece(pos);
-                if (piece != null && piece.getPieceType().equals(ChessPiece.PieceType.KING) &&
-                        piece.getTeamColor().equals(currentTeam)) {
-                    return pos;
+                if (piece != null && piece.getTeamColor().equals(team)) {
+                    positions.add(pos);
                 }
             }
         }
-        return null;
+        return positions;
+    }
+
+    /**
+     * Calculates all possible moves that all pieces from a specified team can make, ignoring check rules
+     * @param team the color for who's moves to calculate
+     * @return all possible moves a team can make
+     */
+    private Collection<ChessMove> allPossibleTeamMoves(TeamColor team) {
+        Collection<ChessPosition> positions = findAllTeamPiecePositions(team);
+        Collection<ChessMove> moves = new ArrayList<>();
+
+        for (ChessPosition pos : positions) {
+            ChessPiece piece = board.getPiece(pos);
+            moves.addAll(piece.pieceMoves(board, pos));
+        }
+
+        return moves;
     }
 
     /**
@@ -99,7 +146,20 @@ public class ChessGame {
      * @return True if the specified team is in checkmate
      */
     public boolean isInCheckmate(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
+        TeamColor enemyColor = getEnemyTeam(teamColor);
+        Collection<ChessMove> allMyMoves = allPossibleTeamMoves(teamColor);
+    }
+
+    /**
+     * Returns the enemy team
+     * @param myTeam team color
+     * @return the color of the opposing team
+     */
+    private TeamColor getEnemyTeam(TeamColor myTeam) {
+        if (myTeam.equals(TeamColor.BLACK)) {
+            return TeamColor.WHITE;
+        }
+        return TeamColor.BLACK;
     }
 
     /**
