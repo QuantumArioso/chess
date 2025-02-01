@@ -72,10 +72,20 @@ public class ChessGame {
      */
     public boolean isInCheck(TeamColor teamColor) {
         ChessPosition kingPosition = findKingPosition(teamColor);
-        TeamColor enemyColor = getEnemyTeam(teamColor);
+        return helperIsInCheck(teamColor, kingPosition);
+    }
 
-        Collection<ChessPosition> positions = findAllTeamPiecePositions(enemyColor);
-        for (ChessPosition pos : positions) {
+    /**
+     * Used to check if any position would be in check if the king was there
+     * @param teamColor the team the king is on
+     * @param kingPosition the position the king is/would be at
+     * @return true if that position is in check
+     */
+    private boolean helperIsInCheck(TeamColor teamColor, ChessPosition kingPosition) {
+        TeamColor enemyColor = getEnemyTeam(teamColor);
+        Collection<ChessPosition> enemyPositions = findAllTeamPiecePositions(enemyColor);
+
+        for (ChessPosition pos : enemyPositions) {
             ChessPiece piece = board.getPiece(pos);
             if (piece != null) {
                 Collection<ChessMove> moves = piece.pieceMoves(board, pos);
@@ -148,6 +158,76 @@ public class ChessGame {
     public boolean isInCheckmate(TeamColor teamColor) {
         TeamColor enemyColor = getEnemyTeam(teamColor);
         Collection<ChessMove> allMyMoves = allPossibleTeamMoves(teamColor);
+        Collection<ChessPosition> allMyPossiblePositions = new ArrayList<>();
+        for (ChessMove move : allMyMoves) {
+            allMyPossiblePositions.add(move.getEndPosition());
+        }
+
+        Collection<ChessMove> allEnemyMoves = allPossibleTeamMoves(enemyColor);
+//        Collection<ChessPosition> allEnemyPossiblePositions = new ArrayList<>();
+//        for (ChessMove move : allEnemyMoves) {
+//            allEnemyPossiblePositions.add(move.getEndPosition());
+//        }
+
+        ChessPosition kingPosition = findKingPosition(teamColor);
+        if (kingPosition == null) {
+            throw new RuntimeException("Somehow you lost your king. How did you do this?");
+        }
+        ChessPiece king = board.getPiece(kingPosition);
+        Collection<ChessMove> kingPossibleMoves = king.pieceMoves(board, kingPosition);
+        Collection<ChessPosition> kingPossiblePositions = new ArrayList<>();
+        for (ChessMove move : kingPossibleMoves) {
+            kingPossiblePositions.add(move.getEndPosition());
+        }
+
+        Collection<ChessPosition> spotsInCheck = new ArrayList<>();
+        for (ChessPosition pos : kingPossiblePositions) {
+            if (helperIsInCheck(teamColor, pos)) {
+                spotsInCheck.add(pos);
+            }
+        }
+
+        boolean stillInCheck = true;
+        for (ChessPosition checkPos : spotsInCheck) {
+            for (ChessMove enemyMove : allEnemyMoves) {
+                if (enemyMove.getEndPosition().equals(checkPos) &&
+                        allMyPossiblePositions.contains(enemyMove.getStartPosition())) {
+                    stillInCheck = false;
+                    break;
+                }
+            }
+        }
+        return stillInCheck;
+
+//        // if there's somewhere the king can move that's not where the enemy can, we're not in checkmate
+//        if (!allEnemyPossiblePositions.containsAll(kingPossiblePositions)) {
+//            return false;
+//        }
+//
+//        // if the enemy can't move to where the king is or where the king can move, we're not in checkmate
+//
+//
+//
+//        if (allEnemyPossiblePositions.contains(kingPosition) &&
+//                allEnemyPossiblePositions.containsAll(kingPossiblePositions)) {
+//            for (ChessMove enemyMove : allEnemyMoves) {
+//                for (ChessPosition myPosition : allMyPossiblePositions) {
+//                    if (enemyMove.getEndPosition().equals(kingPosition) && enemyMove.getStartPosition().equals(myPosition)) {
+//                        // TODO: but what if it's still in checkmate from everything else?
+//                        return false;
+//                    }
+//                }
+//            }
+//
+//
+//            if () {
+//                // TODO: and I can't capture them so the king is no longer in danger
+//                return false;
+//            }
+//
+//        }
+
+
     }
 
     /**
