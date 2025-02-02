@@ -9,7 +9,7 @@ import java.util.Objects;
  * Note: You can add to this class, but you may not alter
  * signature of the existing methods.
  */
-public class ChessBoard {
+public class ChessBoard implements Cloneable {
     private ChessPiece[][] squares = new ChessPiece[8][8];
 
     public ChessBoard() {
@@ -60,6 +60,10 @@ public class ChessBoard {
     public void addPiece(ChessPosition position, ChessPiece piece) {
         // the positions passed in are 1-8; my indexing is 0-7
         squares[position.getRow()-1][position.getColumn()-1] = piece;
+    }
+
+    private void setNewSquares(ChessPiece[][] newSquares) {
+        squares = newSquares;
     }
 
     /**
@@ -137,5 +141,30 @@ public class ChessBoard {
      */
     public boolean isEmpty(ChessPosition position) {
         return squares[position.getRow()-1][position.getColumn()-1] == null;
+    }
+
+    @Override
+    public ChessBoard clone() {
+        try {
+            ChessBoard clone = (ChessBoard) super.clone();
+
+            ChessPiece[][] clonedSquares = new ChessPiece[8][8];
+            clone.setNewSquares(clonedSquares);
+            for (int i = 1; i <= 8; i++) {
+                for (int j = 1; j <= 8; j++) {
+                    ChessPosition pos = new ChessPosition(i, j);
+                    ChessPiece piece = getPiece(pos);
+                    if (piece != null) {
+                        clone.addPiece(pos, piece.clone());
+                    }
+                    else {
+                        clone.addPiece(pos, null);
+                    }
+                }
+            }
+            return clone;
+        } catch (CloneNotSupportedException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

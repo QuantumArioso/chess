@@ -157,6 +157,7 @@ public class ChessGame {
      */
     public boolean isInCheckmate(TeamColor teamColor) {
         TeamColor enemyColor = getEnemyTeam(teamColor);
+        ChessBoard myBoard = board;
         Collection<ChessMove> allMyMoves = allPossibleTeamMoves(teamColor);
         Collection<ChessPosition> allMyPossiblePositions = new ArrayList<>();
         for (ChessMove move : allMyMoves) {
@@ -181,18 +182,21 @@ public class ChessGame {
         }
 
         Collection<ChessPosition> spotsInCheck = new ArrayList<>();
+        if (isInCheck(teamColor)) {
+            spotsInCheck.add(kingPosition);
+        }
         for (ChessPosition pos : kingPossiblePositions) {
             if (helperIsInCheck(teamColor, pos)) {
                 spotsInCheck.add(pos);
             }
         }
 
-        boolean stillInCheck = true;
+        boolean stillInCheck = false;
         for (ChessPosition checkPos : spotsInCheck) {
             for (ChessMove enemyMove : allEnemyMoves) {
                 if (enemyMove.getEndPosition().equals(checkPos) &&
-                        allMyPossiblePositions.contains(enemyMove.getStartPosition())) {
-                    stillInCheck = false;
+                        !allMyPossiblePositions.contains(enemyMove.getStartPosition())) {
+                    stillInCheck = true;
                     break;
                 }
             }
