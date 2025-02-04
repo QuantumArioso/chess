@@ -156,19 +156,7 @@ public class ChessGame {
      * @return True if the specified team is in checkmate
      */
     public boolean isInCheckmate(TeamColor teamColor) {
-        TeamColor enemyColor = getEnemyTeam(teamColor);
-        ChessBoard myBoard = board;
         Collection<ChessMove> allMyMoves = allPossibleTeamMoves(teamColor);
-        Collection<ChessPosition> allMyPossiblePositions = new ArrayList<>();
-        for (ChessMove move : allMyMoves) {
-            allMyPossiblePositions.add(move.getEndPosition());
-        }
-
-        Collection<ChessMove> allEnemyMoves = allPossibleTeamMoves(enemyColor);
-//        Collection<ChessPosition> allEnemyPossiblePositions = new ArrayList<>();
-//        for (ChessMove move : allEnemyMoves) {
-//            allEnemyPossiblePositions.add(move.getEndPosition());
-//        }
 
         ChessPosition kingPosition = findKingPosition(teamColor);
         if (kingPosition == null) {
@@ -176,62 +164,26 @@ public class ChessGame {
         }
         ChessPiece king = board.getPiece(kingPosition);
         Collection<ChessMove> kingPossibleMoves = king.pieceMoves(board, kingPosition);
-        Collection<ChessPosition> kingPossiblePositions = new ArrayList<>();
-        for (ChessMove move : kingPossibleMoves) {
-            kingPossiblePositions.add(move.getEndPosition());
+        if (kingPossibleMoves.isEmpty()) {
+            return false;
         }
 
-        Collection<ChessPosition> spotsInCheck = new ArrayList<>();
-        if (isInCheck(teamColor)) {
-            spotsInCheck.add(kingPosition);
+        // need to check all my piece moves since could block without capturing
+        // clone board and move each piece, then see if king still in check
+        Collection<Boolean> inCheckValues = new ArrayList<>();
+        for (ChessMove move : allMyMoves) {
+            ChessBoard clone = board.clone();
+            ChessGame cloneGame = new ChessGame();
+
+            ChessPosition pieceStartPos = move.getStartPosition();
+            ChessPiece piece = clone.getPiece(pieceStartPos);
+            ChessPosition pieceEndPos = move.getEndPosition();
+            clone.addPiece(pieceEndPos, piece);
+            clone.addPiece(pieceStartPos, null);
+            cloneGame.setBoard(clone);
+            inCheckValues.add(cloneGame.isInCheck(teamColor));
         }
-        for (ChessPosition pos : kingPossiblePositions) {
-            if (helperIsInCheck(teamColor, pos)) {
-                spotsInCheck.add(pos);
-            }
-        }
-
-        boolean stillInCheck = false;
-        for (ChessPosition checkPos : spotsInCheck) {
-            for (ChessMove enemyMove : allEnemyMoves) {
-                if (enemyMove.getEndPosition().equals(checkPos) &&
-                        !allMyPossiblePositions.contains(enemyMove.getStartPosition())) {
-                    stillInCheck = true;
-                    break;
-                }
-            }
-        }
-        return stillInCheck;
-
-//        // if there's somewhere the king can move that's not where the enemy can, we're not in checkmate
-//        if (!allEnemyPossiblePositions.containsAll(kingPossiblePositions)) {
-//            return false;
-//        }
-//
-//        // if the enemy can't move to where the king is or where the king can move, we're not in checkmate
-//
-//
-//
-//        if (allEnemyPossiblePositions.contains(kingPosition) &&
-//                allEnemyPossiblePositions.containsAll(kingPossiblePositions)) {
-//            for (ChessMove enemyMove : allEnemyMoves) {
-//                for (ChessPosition myPosition : allMyPossiblePositions) {
-//                    if (enemyMove.getEndPosition().equals(kingPosition) && enemyMove.getStartPosition().equals(myPosition)) {
-//                        // TODO: but what if it's still in checkmate from everything else?
-//                        return false;
-//                    }
-//                }
-//            }
-//
-//
-//            if () {
-//                // TODO: and I can't capture them so the king is no longer in danger
-//                return false;
-//            }
-//
-//        }
-
-
+        return !inCheckValues.contains(false);
     }
 
     /**
