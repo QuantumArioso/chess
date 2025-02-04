@@ -51,7 +51,22 @@ public class ChessGame {
      * startPosition
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
-        throw new RuntimeException("Not implemented");
+        ChessPiece piece = board.getPiece(startPosition);
+        Collection<ChessMove> possibleMoves = piece.pieceMoves(board, startPosition);
+        Collection<ChessMove> validMoves = new ArrayList<>();
+        for (ChessMove move : possibleMoves) {
+            ChessBoard clone = board.clone();
+            ChessGame cloneGame = new ChessGame();
+
+            ChessPosition pieceEndPos = move.getEndPosition();
+            clone.addPiece(pieceEndPos, piece);
+            clone.addPiece(startPosition, null);
+            cloneGame.setBoard(clone);
+            if (!cloneGame.isInCheck(piece.getTeamColor())) {
+                validMoves.add(move);
+            }
+        }
+        return validMoves;
     }
 
     /**
@@ -61,7 +76,21 @@ public class ChessGame {
      * @throws InvalidMoveException if move is invalid
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
-        throw new RuntimeException("Not implemented");
+        ChessPosition startPosition = move.getStartPosition();
+        ChessPiece piece = board.getPiece(startPosition);
+        if (piece == null || !piece.getTeamColor().equals(currentTeam) || !validMoves(startPosition).contains(move)) {
+            throw new InvalidMoveException("Invalid move");
+        }
+
+        ChessPosition pieceEndPos = move.getEndPosition();
+        ChessPiece newPiece = piece;
+        if (move.getPromotionPiece() != null) {
+            newPiece = new ChessPiece(currentTeam, move.getPromotionPiece());
+        }
+        board.addPiece(pieceEndPos, newPiece);
+        board.addPiece(startPosition, null);
+
+        setTeamTurn(getEnemyTeam(currentTeam));
     }
 
     /**
@@ -206,7 +235,15 @@ public class ChessGame {
      * @return True if the specified team is in stalemate, otherwise false
      */
     public boolean isInStalemate(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
+        if (isInCheck(teamColor)) {
+            return false;
+        }
+        Collection<ChessPosition> startingPositions = findAllTeamPiecePositions(teamColor);
+        Collection<ChessMove> allValidMoves = new ArrayList<>();
+        for (ChessPosition pos : startingPositions) {
+            allValidMoves.addAll(validMoves(pos));
+        }
+        return allValidMoves.isEmpty();
     }
 
     /**
