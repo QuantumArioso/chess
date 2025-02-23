@@ -1,4 +1,4 @@
 package handler;
 
-public record GameListRequest() {
+public record GameListRequest(String authToken) {
 }

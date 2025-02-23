@@ -1,4 +1,4 @@
 package handler;
 
-public record GameCreateRequest(String gameName) {
+public record GameCreateRequest(String authToken, String gameName) {
 }
