@@ -32,8 +32,8 @@ public class UserService {
         throw new RuntimeException("Not implemented");
     }
 
-    public void clearUserData() {
+    public static void clearUserData() {
         UserDAO userDAO = new MemoryUserDAO();
-        userDAO.deleteUserData();
+        userDAO.deleteAllUserData();
     }
 }

@@ -3,6 +3,8 @@ package dataaccess;
 import db.MockedDB;
 import model.AuthData;
 
+import java.util.ArrayList;
+
 public class MemoryAuthDAO implements AuthDAO {
     public AuthData createAuth(String username) {
         String authToken = AuthData.generateAuthToken();
@@ -15,7 +17,7 @@ public class MemoryAuthDAO implements AuthDAO {
         throw new RuntimeException("Not implemented");
     }
 
-    public void deleteAuth(AuthData authData) {
-        throw new RuntimeException("Not implemented");
+    public void deleteAllAuthData() {
+        MockedDB.allAuthData = new ArrayList<>();
     }
 }

@@ -1,7 +1,7 @@
 package service;
 
-import dataaccess.MemoryUserDAO;
-import dataaccess.UserDAO;
+import dataaccess.GameDAO;
+import dataaccess.MemoryGameDAO;
 import handler.*;
 
 public class GameService {
@@ -11,8 +11,8 @@ public class GameService {
 
     public void joinGame(GameJoinRequest gameJoinRequest) {throw new RuntimeException("Not implemented");}
 
-//    public void clearGameData() {
-//        GameDAO gameDAO = new MemoryGameDAO();
-//        gameDAO.deleteUserData();
-//    }
+    public static void clearGameData() {
+        GameDAO gameDAO = new MemoryGameDAO();
+        gameDAO.deleteAllGameData();
+    }
 }

@@ -22,7 +22,7 @@ public class MemoryUserDAO implements UserDAO {
     }
 
     @Override
-    public void deleteUserData() {
+    public void deleteAllUserData() {
         MockedDB.allUserData = new ArrayList<>();
     }
 }
