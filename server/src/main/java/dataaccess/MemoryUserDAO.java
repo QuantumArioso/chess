@@ -1,13 +1,28 @@
 package dataaccess;
 
-public class MemoryUserDAO {
-    private String username;
-    private String password;
-    private String email;
+import db.MockedDB;
+import model.AuthData;
+import model.UserData;
 
-    public MemoryUserDAO(String username, String password, String email) {
-        this.username = username;
-        this.password = password;
-        this.email = email;
+import java.util.ArrayList;
+
+
+public class MemoryUserDAO implements UserDAO {
+    public UserData getUser(String username) {
+        for (UserData data : MockedDB.allUserData) {
+            if (data.username().equals(username)) {
+                return data;
+            }
+        }
+        return null;
+    }
+
+    public void createUser(UserData userData) {
+        MockedDB.allUserData.add(userData);
+    }
+
+    @Override
+    public void deleteUserData() {
+        MockedDB.allUserData = new ArrayList<>();
     }
 }
