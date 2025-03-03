@@ -1,4 +1,3 @@
 package handler;
 
-public record GameCreateResult(int gameID) {
-}
+public record GameCreateResult(int gameID) {}

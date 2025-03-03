@@ -2,9 +2,11 @@ package service;
 
 
 import dataaccess.DataAccessException;
+import dataaccess.MemoryGameDAO;
 import db.MockedDB;
 import handler.*;
 import model.AuthData;
+import model.GameData;
 import model.UserData;
 import org.junit.jupiter.api.*;
 
@@ -19,8 +21,11 @@ public class ServiceTests {
     @BeforeEach
     public void setup() throws DataAccessException {
         userService = new UserService();
+        gameService = new GameService();
+        authService = new AuthService();
         registerRequest = new RegisterRequest("ari", "stars8", "ari@gmail.com");
         userService.register(registerRequest);
+
     }
 
     @AfterEach
@@ -105,14 +110,27 @@ public class ServiceTests {
 
     @Test
     @DisplayName("Game: Success Create Game")
-    public void successCreateGame() {
+    public void successCreateGame() throws DataAccessException {
+        String authToken = userService.login(new LoginRequest("ari", "stars8")).authToken();
+        GameCreateResult result = gameService.createGame(new GameCreateRequest(authToken, "My Game"));
 
+        boolean inDatabase = false;
+        for (GameData data : MockedDB.allGameData) {
+            if (data.gameName().equals("My Game")) {
+                inDatabase = true;
+                break;
+            }
+        }
+        assertTrue(inDatabase);
+        assertEquals(MemoryGameDAO.gameCounter - 1, result.gameID());
     }
 
     @Test
     @DisplayName("Game: Failed Create Game")
     public void failedCreateGame() {
-
+        String badAuthToken = "hello_world";
+        GameCreateRequest request = new GameCreateRequest(badAuthToken, "My Game");
+        assertThrows(DataAccessException.class, () -> gameService.createGame(request));
     }
 
     @Test
