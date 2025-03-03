@@ -2,6 +2,7 @@ package dataaccess;
 
 import db.MockedDB;
 import model.AuthData;
+import model.UserData;
 
 import java.util.ArrayList;
 
@@ -14,7 +15,17 @@ public class MemoryAuthDAO implements AuthDAO {
     }
 
     public AuthData getAuth(String authToken) {
-        throw new RuntimeException("Not implemented");
+        for (AuthData data : MockedDB.allAuthData) {
+            if (data.authToken().equals(authToken)) {
+                return data;
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public void deleteAuthData(String authToken) {
+        MockedDB.allAuthData.removeIf(data -> authToken.equals(data.authToken()));
     }
 
     public void deleteAllAuthData() {
