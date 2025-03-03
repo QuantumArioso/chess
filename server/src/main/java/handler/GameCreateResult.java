@@ -1,4 +1,4 @@
 package handler;
 
-public record GameCreateResult(String gameID) {
+public record GameCreateResult(int gameID) {
 }
