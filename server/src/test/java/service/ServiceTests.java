@@ -1,8 +1,11 @@
 package service;
 
 
+import chess.ChessGame;
 import dataaccess.DataAccessException;
 import dataaccess.MemoryGameDAO;
+import dataaccess.UnauthorizedException;
+import dataaccess.UnavailableException;
 import db.MockedDB;
 import handler.*;
 import model.AuthData;
@@ -17,6 +20,10 @@ public class ServiceTests {
     GameService gameService;
     AuthService authService;
     RegisterRequest registerRequest;
+    LoginRequest loginRequest;
+    String authToken;
+    GameCreateRequest gameCreateRequest;
+    int gameID;
 
     @BeforeEach
     public void setup() throws DataAccessException {
@@ -25,7 +32,10 @@ public class ServiceTests {
         authService = new AuthService();
         registerRequest = new RegisterRequest("ari", "stars8", "ari@gmail.com");
         userService.register(registerRequest);
-
+        loginRequest = new LoginRequest("ari", "stars8");
+        authToken = userService.login(loginRequest).authToken();
+        gameCreateRequest = new GameCreateRequest(authToken, "Test Game");
+        gameID = gameService.createGame(gameCreateRequest).gameID();
     }
 
     @AfterEach
@@ -135,14 +145,37 @@ public class ServiceTests {
 
     @Test
     @DisplayName("Game: Success Join Game")
-    public void successJoinGame() {
+    public void successJoinGame() throws DataAccessException {
+        String authToken = userService.login(new LoginRequest("ari", "stars8")).authToken();
+        GameCreateResult createResult = gameService.createGame(new GameCreateRequest(authToken, "My Game"));
+        GameJoinRequest request = new GameJoinRequest(authToken, ChessGame.TeamColor.BLACK, createResult.gameID());
+        gameService.joinGame(request);
 
+        boolean inDatabase = false;
+        for (GameData data : MockedDB.allGameData) {
+            if (data.gameID() == request.gameID()) {
+                inDatabase = "ari".equals(data.blackUsername());
+                break;
+            }
+        }
+        assertTrue(inDatabase);
     }
 
     @Test
-    @DisplayName("Game: Failed Join Game")
-    public void failedJoinGame() {
+    @DisplayName("Game: Failed Join Game Bad Auth")
+    public void failedJoinGameBadAuth() {
+        String badAuthToken = "hello_world";
+        GameJoinRequest request1 = new GameJoinRequest(badAuthToken, ChessGame.TeamColor.WHITE, gameID);
+        assertThrows(UnauthorizedException.class, () -> gameService.joinGame(request1));
+    }
 
+    @Test
+    @DisplayName("Game: Failed Join Game Player Already In Use")
+    public void failedJoinGamePlayerInUse() throws DataAccessException {
+        GameJoinRequest request1 = new GameJoinRequest(authToken, ChessGame.TeamColor.BLACK, gameID);
+        gameService.joinGame(request1);
+        GameJoinRequest request2 = new GameJoinRequest(authToken, ChessGame.TeamColor.BLACK, gameID);
+        assertThrows(UnavailableException.class, () -> gameService.joinGame(request2));
     }
 
     @Test

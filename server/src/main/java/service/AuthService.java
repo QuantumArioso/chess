@@ -7,7 +7,7 @@ import dataaccess.UnauthorizedException;
 import model.AuthData;
 
 public class AuthService {
-    public static void validateAuth(String authToken) throws DataAccessException {
+    public static void validateAuth(String authToken) throws UnauthorizedException {
         AuthDAO authDAO = new MemoryAuthDAO();
         AuthData authData = authDAO.getAuth(authToken);
         if (authData == null) {
