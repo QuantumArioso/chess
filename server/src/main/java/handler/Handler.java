@@ -19,4 +19,9 @@ public class Handler {
         UserService service = new UserService();
         return service.register(request);
     }
+
+    public static LoginResult login(LoginRequest request) throws DataAccessException {
+        UserService service = new UserService();
+        return service.login(request);
+    }
 }

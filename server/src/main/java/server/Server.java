@@ -1,13 +1,11 @@
 package server;
 
 import com.google.gson.Gson;
+import dataaccess.BadRequestException;
 import dataaccess.DataAccessException;
-import db.MockedDB;
-import handler.EmptyResult;
-import handler.Handler;
-import handler.RegisterRequest;
-import handler.RegisterResult;
-import model.UserData;
+import dataaccess.UnauthorizedException;
+import dataaccess.UnavailableException;
+import handler.*;
 import spark.*;
 
 import java.util.Map;
@@ -22,6 +20,7 @@ public class Server {
         // Register your endpoints and handle exceptions here.
 
         Spark.post("/user", this::registerBody); //register
+        Spark.post("/session", this::loginBody); //login
 
         Spark.delete("/db", this::clearBody); //clear
 
@@ -32,22 +31,42 @@ public class Server {
         return Spark.port();
     }
 
-    // turns body into a Map object that I can use in Java
     private Object registerBody(Request req, Response res) throws DataAccessException {
         Map<String, String> body = convertFromJSON(req);
-        if (!body.containsKey("username") || !body.containsKey("password") || !body.containsKey("email") ||
-                body.get("username").isEmpty() || body.get("password").isEmpty() || body.get("email").isEmpty()) {
-            return errorHandler("bad request", req, res, 400);
-        }
         try {
+            badRegisterRequest(body);
+
             RegisterRequest request = new RegisterRequest(body.get("username"), body.get("password"), body.get("email"));
             RegisterResult result = Handler.register(request);
+
             res.status(200);
             res.type("application/json");
             return new Gson().toJson(result);
-
-        } catch (DataAccessException e) {
+        } catch (UnavailableException e) {
             return errorHandler(e.getMessage(), req, res, 403);
+        } catch (BadRequestException e) {
+            return errorHandler(e.getMessage(), req, res, 400);
+        }
+    }
+
+    private Object loginBody(Request req, Response res) throws DataAccessException {
+        Map<String, String> body = convertFromJSON(req);
+        try {
+            LoginRequest request = new LoginRequest(body.get("username"), body.get("password"));
+            LoginResult result = Handler.login(request);
+
+            res.status(200);
+            res.type("application/json");
+            return new Gson().toJson(result);
+        } catch (UnauthorizedException e) {
+            return errorHandler(e.getMessage(), req, res, 401);
+        }
+    }
+
+    private void badRegisterRequest(Map<String, String> body) throws BadRequestException {
+        if (!body.containsKey("username") || !body.containsKey("password") || !body.containsKey("email") ||
+                body.get("username").isEmpty() || body.get("password").isEmpty() || body.get("email").isEmpty()) {
+            throw new BadRequestException();
         }
     }
 

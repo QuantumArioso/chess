@@ -31,11 +31,11 @@ public class UserService {
 
         UserData userData = userDAO.getUser(username);
         if (userData == null) {
-            throw new DataAccessException("Error: unauthorized");
+            throw new UnauthorizedException();
         }
 
         if (!validatePassword(userData, loginRequest.password())) {
-            throw new DataAccessException("Error: unauthorized");
+            throw new UnauthorizedException();
         }
 
         AuthData authData = authDAO.createAuth(username);
