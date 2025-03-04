@@ -11,8 +11,6 @@ public class UserService {
         UserDAO userDAO = new MemoryUserDAO();
         AuthDAO authDAO = new MemoryAuthDAO();
 
-        // if the user already exists, send back a 403 error that the user already exists
-        // I'm going to throw exceptions when this doesn't work
         if (userDAO.getUser(username) != null) {
             throw new UnavailableException();
         }

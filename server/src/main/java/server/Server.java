@@ -130,15 +130,7 @@ public class Server {
         try {
             Map<String, String> body = convertFromJSON(req);
 
-            String strPlayerColor = body.get("playerColor");
-            ChessGame.TeamColor playerColor;
-            if (strPlayerColor != null && strPlayerColor.contains("W")) {
-                playerColor = ChessGame.TeamColor.WHITE;
-            } else if (strPlayerColor != null && strPlayerColor.contains("B")) {
-                playerColor = ChessGame.TeamColor.BLACK;
-            } else {
-                throw new BadRequestException();
-            }
+            ChessGame.TeamColor playerColor = getPlayerColor(body.get("playerColor"));
 
             if (body.get("gameID") == null) {
                 throw new BadRequestException();
@@ -164,7 +156,15 @@ public class Server {
         }
     }
 
-
+    private ChessGame.TeamColor getPlayerColor(String strPlayerColor) {
+        if (strPlayerColor != null && strPlayerColor.contains("W")) {
+            return ChessGame.TeamColor.WHITE;
+        } else if (strPlayerColor != null && strPlayerColor.contains("B")) {
+            return ChessGame.TeamColor.BLACK;
+        } else {
+            throw new BadRequestException();
+        }
+    }
 
     private Object clearBody(Request req, Response res) {
         EmptyResult empty = Handler.clearDatabase();
