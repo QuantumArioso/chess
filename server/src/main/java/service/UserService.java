@@ -47,12 +47,14 @@ public class UserService {
         return userData.password().equals(password);
     }
 
-    public void logout(LogoutRequest logoutRequest) throws DataAccessException {
+    public EmptyResult logout(LogoutRequest logoutRequest) throws DataAccessException {
         AuthDAO authDAO = new MemoryAuthDAO();
         String authToken = logoutRequest.authToken();
         AuthService.validateAuth(authToken);
 
         authDAO.deleteAuthData(authToken);
+
+        return new EmptyResult();
     }
 
     public static void clearUserData() {

@@ -24,4 +24,9 @@ public class Handler {
         UserService service = new UserService();
         return service.login(request);
     }
+
+    public static EmptyResult logout(LogoutRequest request) throws DataAccessException {
+        UserService service = new UserService();
+        return service.logout(request);
+    }
 }

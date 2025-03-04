@@ -22,6 +22,7 @@ public class Server {
         Spark.post("/user", this::registerBody); //register
         Spark.post("/session", this::loginBody); //login
 
+        Spark.delete("/session", this::logoutBody); //logout
         Spark.delete("/db", this::clearBody); //clear
 
         //This line initializes the server and can be removed once you have a functioning endpoint 
@@ -42,9 +43,11 @@ public class Server {
             res.status(200);
             res.type("application/json");
             return new Gson().toJson(result);
-        } catch (UnavailableException e) {
+        }
+        catch (UnavailableException e) {
             return errorHandler(e.getMessage(), req, res, 403);
-        } catch (BadRequestException e) {
+        }
+        catch (BadRequestException e) {
             return errorHandler(e.getMessage(), req, res, 400);
         }
     }
@@ -58,7 +61,22 @@ public class Server {
             res.status(200);
             res.type("application/json");
             return new Gson().toJson(result);
-        } catch (UnauthorizedException e) {
+        }
+        catch (UnauthorizedException e) {
+            return errorHandler(e.getMessage(), req, res, 401);
+        }
+    }
+
+    private Object logoutBody(Request req, Response res) throws DataAccessException {
+        try {
+            LogoutRequest request = new LogoutRequest(req.headers("authorization"));
+            EmptyResult result = Handler.logout(request);
+
+            res.status(200);
+            res.type("application/json");
+            return new Gson().toJson(result);
+        }
+        catch (UnauthorizedException e) {
             return errorHandler(e.getMessage(), req, res, 401);
         }
     }

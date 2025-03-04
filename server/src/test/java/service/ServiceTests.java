@@ -94,11 +94,13 @@ public class ServiceTests {
         LoginResult loginResult = userService.login(loginRequest);
         String authToken = loginResult.authToken();
 
-        userService.logout(new LogoutRequest(authToken));
+        EmptyResult result = userService.logout(new LogoutRequest(authToken));
 
         for (AuthData data : MockedDB.allAuthData) {
             assertNotEquals(authToken, data.authToken());
         }
+
+        assertEquals(new EmptyResult(), result);
     }
 
     @Test
