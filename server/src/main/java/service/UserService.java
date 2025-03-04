@@ -14,7 +14,7 @@ public class UserService {
         // if the user already exists, send back a 403 error that the user already exists
         // I'm going to throw exceptions when this doesn't work
         if (userDAO.getUser(username) != null) {
-            throw new DataAccessException("Error: already taken");
+            throw new UnavailableException();
         }
 
         UserData userData = new UserData(username, registerRequest.password(), registerRequest.email());
@@ -50,17 +50,9 @@ public class UserService {
     public void logout(LogoutRequest logoutRequest) throws DataAccessException {
         AuthDAO authDAO = new MemoryAuthDAO();
         String authToken = logoutRequest.authToken();
-        validateAuth(authToken);
+        AuthService.validateAuth(authToken);
 
         authDAO.deleteAuthData(authToken);
-    }
-
-    public static void validateAuth(String authToken) throws DataAccessException {
-        AuthDAO authDAO = new MemoryAuthDAO();
-        AuthData authData = authDAO.getAuth(authToken);
-        if (authData == null) {
-            throw new DataAccessException("Error: unauthorized");
-        }
     }
 
     public static void clearUserData() {

@@ -134,6 +134,18 @@ public class ServiceTests {
     }
 
     @Test
+    @DisplayName("Game: Success Join Game")
+    public void successJoinGame() {
+
+    }
+
+    @Test
+    @DisplayName("Game: Failed Join Game")
+    public void failedJoinGame() {
+
+    }
+
+    @Test
     @DisplayName("Game: Success Clear Game Data")
     public void testClearGameData() {
         GameService.clearGameData();

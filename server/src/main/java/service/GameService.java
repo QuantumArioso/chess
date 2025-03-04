@@ -10,7 +10,7 @@ public class GameService {
     public GameListResult listGames(GameListRequest gameListRequest) {throw new RuntimeException("Not implemented");}
 
     public GameCreateResult createGame(GameCreateRequest gameCreateRequest) throws DataAccessException {
-        UserService.validateAuth(gameCreateRequest.authToken());
+        AuthService.validateAuth(gameCreateRequest.authToken());
 
         GameDAO gameDAO = new MemoryGameDAO();
         GameData gameData = gameDAO.addNewGame(gameCreateRequest.gameName());
@@ -18,7 +18,11 @@ public class GameService {
         return new GameCreateResult(gameData.gameID());
     }
 
-    public void joinGame(GameJoinRequest gameJoinRequest) {throw new RuntimeException("Not implemented");}
+    public void joinGame(GameJoinRequest gameJoinRequest) throws DataAccessException {
+        AuthService.validateAuth(gameJoinRequest.authToken());
+
+
+    }
 
     public static void clearGameData() {
         GameDAO gameDAO = new MemoryGameDAO();
