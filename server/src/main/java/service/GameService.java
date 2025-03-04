@@ -52,5 +52,6 @@ public class GameService {
     public static void clearGameData() {
         GameDAO gameDAO = new MemoryGameDAO();
         gameDAO.deleteAllGameData();
+        MemoryGameDAO.setGameCounter(1);
     }
 }

@@ -9,6 +9,10 @@ import java.util.ArrayList;
 public class MemoryGameDAO implements GameDAO {
     public static int gameCounter = 1;
 
+    public static void setGameCounter(int gameCounter) {
+        MemoryGameDAO.gameCounter = gameCounter;
+    }
+
     @Override
     public GameData addNewGame(String gameName) {
         GameData gameData = new GameData(gameCounter, null, null, gameName, new ChessGame());
