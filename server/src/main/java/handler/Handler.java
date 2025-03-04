@@ -41,4 +41,9 @@ public class Handler {
         GameService service = new GameService();
         return service.createGame(request);
     }
+
+    public static EmptyResult joinGame(GameJoinRequest request) throws DataAccessException {
+        GameService service = new GameService();
+        return service.joinGame(request);
+    }
 }

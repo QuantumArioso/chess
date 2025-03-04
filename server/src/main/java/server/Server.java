@@ -1,5 +1,6 @@
 package server;
 
+import chess.ChessGame;
 import com.google.gson.Gson;
 import dataaccess.BadRequestException;
 import dataaccess.DataAccessException;
@@ -9,6 +10,7 @@ import handler.*;
 import spark.*;
 
 import java.util.Map;
+import java.util.Set;
 
 public class Server {
 
@@ -24,6 +26,8 @@ public class Server {
         Spark.post("/game", this::createGameBody); //create game
 
         Spark.get("/game", this::listGamesBody); //list games
+
+        Spark.put("game", this::joinGameBody); //join game
 
         Spark.delete("/session", this::logoutBody); //logout
         Spark.delete("/db", this::clearBody); //clear
@@ -122,6 +126,41 @@ public class Server {
         }
     }
 
+    private Object joinGameBody(Request req, Response res) throws DataAccessException {
+        try {
+            Map<String, String> body = convertFromJSON(req);
+
+            String strPlayerColor = body.get("playerColor");
+            ChessGame.TeamColor playerColor;
+            if (strPlayerColor != null && strPlayerColor.contains("W")) {
+                playerColor = ChessGame.TeamColor.WHITE;
+            } else if (strPlayerColor != null && strPlayerColor.contains("B")) {
+                playerColor = ChessGame.TeamColor.BLACK;
+            } else {
+                throw new BadRequestException();
+            }
+
+            if (body.get("gameID") == null) {
+                throw new BadRequestException();
+            }
+            double doubleGameID = Double.parseDouble(body.get("gameID"));
+            int gameID = (int) doubleGameID;
+
+            GameJoinRequest request = new GameJoinRequest(req.headers("authorization"), playerColor, gameID);
+            EmptyResult result = Handler.joinGame(request);
+
+            res.status(200);
+            res.type("application/json");
+            return new Gson().toJson(result);
+        }
+        catch (BadRequestException e) {
+            return errorHandler(e.getMessage(), req, res, 400);
+        }
+        catch (UnauthorizedException e) {
+            return errorHandler(e.getMessage(), req, res, 401);
+        }
+    }
+
 
 
     private Object clearBody(Request req, Response res) {
@@ -132,9 +171,16 @@ public class Server {
 
     private static Map<String, String> convertFromJSON(Request request) {
         var body = new Gson().fromJson(request.body(), Map.class);
+        Set<String> keys = body.keySet();
+        for (String key : keys) {
+            if (body.get(key) instanceof Double) {
+                body.put(key, String.valueOf(body.get(key)));
+            }
+        }
         if (body == null) {
             throw new RuntimeException("missing required body");
         }
+
         return body;
     }
 
