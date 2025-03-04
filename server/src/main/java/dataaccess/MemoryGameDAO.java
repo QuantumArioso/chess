@@ -7,7 +7,7 @@ import model.GameData;
 import java.util.ArrayList;
 
 public class MemoryGameDAO implements GameDAO {
-    public static int gameCounter = 0;
+    public static int gameCounter = 1;
 
     @Override
     public GameData addNewGame(String gameName) {

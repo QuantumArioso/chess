@@ -21,11 +21,14 @@ public class Server {
 
         Spark.post("/user", this::registerBody); //register
         Spark.post("/session", this::loginBody); //login
+        Spark.post("/game", this::createGameBody); //create game
+
+        Spark.get("/game", this::listGamesBody); //list games
 
         Spark.delete("/session", this::logoutBody); //logout
         Spark.delete("/db", this::clearBody); //clear
 
-        //This line initializes the server and can be removed once you have a functioning endpoint 
+        //This line initializes the server and can be removed once you have a functioning endpoint
         Spark.init();
 
         Spark.awaitInitialization();
@@ -49,6 +52,13 @@ public class Server {
         }
         catch (BadRequestException e) {
             return errorHandler(e.getMessage(), req, res, 400);
+        }
+    }
+
+    private void badRegisterRequest(Map<String, String> body) throws BadRequestException {
+        if (!body.containsKey("username") || !body.containsKey("password") || !body.containsKey("email") ||
+                body.get("username").isEmpty() || body.get("password").isEmpty() || body.get("email").isEmpty()) {
+            throw new BadRequestException();
         }
     }
 
@@ -81,12 +91,38 @@ public class Server {
         }
     }
 
-    private void badRegisterRequest(Map<String, String> body) throws BadRequestException {
-        if (!body.containsKey("username") || !body.containsKey("password") || !body.containsKey("email") ||
-                body.get("username").isEmpty() || body.get("password").isEmpty() || body.get("email").isEmpty()) {
-            throw new BadRequestException();
+    private Object listGamesBody(Request req, Response res) throws DataAccessException {
+        try {
+            GameListRequest request = new GameListRequest(req.headers("authorization"));
+            GameListResult result = Handler.listGames(request);
+
+            res.status(200);
+            res.type("application/json");
+            return new Gson().toJson(result);
+        }
+        catch (UnauthorizedException e) {
+            return errorHandler(e.getMessage(), req, res, 401);
         }
     }
+
+    private Object createGameBody(Request req, Response res) throws DataAccessException {
+        try {
+            Map<String, String> body = convertFromJSON(req);
+            GameCreateRequest request = new GameCreateRequest(req.headers("authorization"), body.get("gameName"));
+            GameCreateResult result = Handler.createGame(request);
+
+            res.status(200);
+            res.type("application/json");
+            return new Gson().toJson(result);
+        } catch (BadRequestException e) {
+            return errorHandler(e.getMessage(), req, res, 400);
+        }
+        catch (UnauthorizedException e) {
+            return errorHandler(e.getMessage(), req, res, 401);
+        }
+    }
+
+
 
     private Object clearBody(Request req, Response res) {
         EmptyResult empty = Handler.clearDatabase();

@@ -2,6 +2,8 @@ package handler;
 
 
 import dataaccess.DataAccessException;
+import dataaccess.GameDAO;
+import dataaccess.UnauthorizedException;
 import service.AuthService;
 import service.GameService;
 import service.UserService;
@@ -28,5 +30,15 @@ public class Handler {
     public static EmptyResult logout(LogoutRequest request) throws DataAccessException {
         UserService service = new UserService();
         return service.logout(request);
+    }
+
+    public static GameListResult listGames(GameListRequest request) throws UnauthorizedException {
+        GameService service = new GameService();
+        return service.listGames(request);
+    }
+
+    public static GameCreateResult createGame(GameCreateRequest request) throws DataAccessException {
+        GameService service = new GameService();
+        return service.createGame(request);
     }
 }
