@@ -159,6 +159,9 @@ public class Server {
         catch (UnauthorizedException e) {
             return errorHandler(e.getMessage(), req, res, 401);
         }
+        catch (UnavailableException e) {
+            return errorHandler(e.getMessage(), req, res, 403);
+        }
     }
 
 
