@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 public class MockedDB {
-    public static Collection<UserData> allUserData = new ArrayList<>();
-    public static Collection<AuthData> allAuthData = new ArrayList<>();
-    public static Collection<GameData> allGameData = new ArrayList<>();
+    public static ArrayList<UserData> allUserData = new ArrayList<>();
+    public static ArrayList<AuthData> allAuthData = new ArrayList<>();
+    public static ArrayList<GameData> allGameData = new ArrayList<>();
 }

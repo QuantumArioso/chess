@@ -50,6 +50,11 @@ public class MemoryGameDAO implements GameDAO {
     }
 
     @Override
+    public ArrayList<GameData> getAllGameData() {
+        return MockedDB.allGameData;
+    }
+
+    @Override
     public void deleteAllGameData() {
         MockedDB.allGameData = new ArrayList<>();
         gameCounter = 0;

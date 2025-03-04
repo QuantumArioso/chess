@@ -13,6 +13,8 @@ import model.GameData;
 import model.UserData;
 import org.junit.jupiter.api.*;
 
+import java.util.ArrayList;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 public class ServiceTests {
@@ -179,6 +181,26 @@ public class ServiceTests {
     }
 
     @Test
+    @DisplayName("Game: Success List Games")
+    public void successListGames() throws DataAccessException {
+        GameCreateRequest newGame = new GameCreateRequest(authToken, "New Game");
+        gameService.createGame(newGame);
+
+        GameListRequest request = new GameListRequest(authToken);
+        gameService.listGames(request);
+
+        assertEquals(2, MockedDB.allGameData.size());
+    }
+
+    @Test
+    @DisplayName("Game: Failed List Games")
+    public void failedListGames() {
+        String badAuthToken = "hello_world";
+        GameListRequest request = new GameListRequest(badAuthToken);
+        assertThrows(UnauthorizedException.class, () -> gameService.listGames(request));
+    }
+
+    @Test
     @DisplayName("Game: Success Clear Game Data")
     public void testClearGameData() {
         GameService.clearGameData();
@@ -188,6 +210,13 @@ public class ServiceTests {
 
 
     // Auth Services
+
+    @Test
+    @DisplayName("Validate Auth")
+    public void testValidateAuth() {
+        String badAuthToken = "Bad Auth Token";
+        assertThrows(UnauthorizedException.class, () -> AuthService.validateAuth(badAuthToken));
+    }
 
     @Test
     @DisplayName("Auth: Success Clear Auth Data")

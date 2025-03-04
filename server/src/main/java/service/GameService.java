@@ -4,14 +4,14 @@ import chess.ChessGame;
 import dataaccess.*;
 import db.MockedDB;
 import handler.*;
-import model.AuthData;
 import model.GameData;
 
 public class GameService {
     public GameListResult listGames(GameListRequest gameListRequest) throws UnauthorizedException {
         AuthService.validateAuth(gameListRequest.authToken());
+        GameDAO gameDAO = new MemoryGameDAO();
 
-
+        return new GameListResult(gameDAO.getAllGameData());
     }
 
     public GameCreateResult createGame(GameCreateRequest gameCreateRequest) throws DataAccessException {
