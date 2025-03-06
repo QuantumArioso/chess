@@ -2,10 +2,7 @@ package server;
 
 import chess.ChessGame;
 import com.google.gson.Gson;
-import dataaccess.BadRequestException;
-import dataaccess.DataAccessException;
-import dataaccess.UnauthorizedException;
-import dataaccess.UnavailableException;
+import dataaccess.*;
 import handler.*;
 import spark.*;
 
@@ -13,11 +10,12 @@ import java.util.Map;
 import java.util.Set;
 
 public class Server {
-
     public int run(int desiredPort) {
         Spark.port(desiredPort);
 
         Spark.staticFiles.location("web");
+
+        new SqlDAO();
 
         // Register your endpoints and handle exceptions here.
 
