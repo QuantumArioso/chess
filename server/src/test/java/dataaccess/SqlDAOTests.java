@@ -8,8 +8,7 @@ import org.junit.jupiter.api.Test;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class SqlDAOTests {
     Connection conn;
@@ -19,6 +18,9 @@ public class SqlDAOTests {
     void setup() throws DataAccessException, SQLException {
         conn = DatabaseManager.getConnection();
         userDAO = new SqlUserDAO();
+
+        UserData userData = new UserData("raine", "whispers", "bard@gmail.com");
+        userDAO.createUser(userData);
 
         userDAO.deleteAllUserData();
     }
@@ -52,6 +54,12 @@ public class SqlDAOTests {
     @DisplayName("Delete all user data")
     void testDeleteAllUserData() throws SQLException, DataAccessException {
         userDAO.deleteAllUserData();
-
+        var statement = "SELECT username FROM user WHERE username=? ";
+        try (var preparedStatement = conn.prepareStatement(statement)) {
+            preparedStatement.setString(1, "raine");
+            try (var results = preparedStatement.executeQuery()) {
+                assertFalse(results.next());
+            }
+        }
     }
 }
