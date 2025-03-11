@@ -10,11 +10,10 @@ import java.sql.SQLException;
 public class UserService {
     public RegisterResult register(RegisterRequest registerRequest) throws DataAccessException, SQLException {
         String username = registerRequest.username();
-        UserDAO userDAO = new SqlUserDAO();
         AuthDAO authDAO = new MemoryAuthDAO();
-        UserDAO memoryUserDAO = new MemoryUserDAO();
+        UserDAO userDAO = new MemoryUserDAO();
 
-        if (memoryUserDAO.getUser(username) != null) {
+        if (userDAO.getUser(username) != null) {
             throw new UnavailableException();
         }
 
@@ -58,7 +57,7 @@ public class UserService {
         return new EmptyResult();
     }
 
-    public static void clearUserData() {
+    public static void clearUserData() throws SQLException, DataAccessException {
         UserDAO userDAO = new MemoryUserDAO();
         userDAO.deleteAllUserData();
     }

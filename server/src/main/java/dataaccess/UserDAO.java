@@ -9,5 +9,5 @@ public interface UserDAO {
 
     void createUser(UserData userData) throws SQLException, DataAccessException;
 
-    void deleteAllUserData();
+    void deleteAllUserData() throws DataAccessException, SQLException;
 }

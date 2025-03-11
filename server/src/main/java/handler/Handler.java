@@ -10,7 +10,7 @@ import service.UserService;
 import java.sql.SQLException;
 
 public class Handler {
-    public static EmptyResult clearDatabase() {
+    public static EmptyResult clearDatabase() throws SQLException, DataAccessException {
         UserService.clearUserData();
         GameService.clearGameData();
         AuthService.clearAuthData();

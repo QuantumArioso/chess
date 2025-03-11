@@ -167,7 +167,7 @@ public class Server {
         }
     }
 
-    private Object clearBody(Request req, Response res) {
+    private Object clearBody(Request req, Response res) throws SQLException, DataAccessException {
         EmptyResult empty = Handler.clearDatabase();
         res.status(200);
         return new Gson().toJson(empty);

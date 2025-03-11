@@ -6,6 +6,7 @@ import org.mindrot.jbcrypt.BCrypt;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.Properties;
 
 import static dataaccess.DatabaseManager.getConnection;
@@ -25,12 +26,14 @@ public class SqlUserDAO extends SqlDAO implements UserDAO {
         Connection conn = DatabaseManager.getConnection();
 
         if (username.matches("[a-zA-Z]+")) {
-            var statement = "INSERT INTO user (username, hashedPassword, email) VALUES(?, ?, ?)";
+            var statement = "INSERT INTO user (username, password, email) VALUES(?, ?, ?)";
             try (var preparedStatement = conn.prepareStatement(statement)) {
                 preparedStatement.setString(1, username);
                 preparedStatement.setString(2, hashedPassword);
                 preparedStatement.setString(3, email);
                 preparedStatement.executeUpdate();
+            } catch (SQLIntegrityConstraintViolationException e) {
+                throw new UnavailableException();
             }
         }
     }
@@ -40,8 +43,12 @@ public class SqlUserDAO extends SqlDAO implements UserDAO {
     }
 
     @Override
-    public void deleteAllUserData() {
-        throw new RuntimeException("Not implemented");
+    public void deleteAllUserData() throws DataAccessException, SQLException {
+        Connection conn = DatabaseManager.getConnection();
+        var statement = "TRUNCATE TABLE user";
+        try (var preparedStatement = conn.prepareStatement(statement)) {
+            preparedStatement.executeUpdate();
+        }
     }
 
 //    private boolean verifyUser(String username, String providedClearTextPassword) {

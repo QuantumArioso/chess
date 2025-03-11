@@ -41,7 +41,7 @@ public class ServiceTests {
     }
 
     @AfterEach
-    public void clear() {
+    public void clear() throws SQLException, DataAccessException {
         UserService.clearUserData();
         GameService.clearGameData();
         AuthService.clearAuthData();
@@ -113,7 +113,7 @@ public class ServiceTests {
 
     @Test
     @DisplayName("User: Success Clear User Data")
-    public void testClearUserData() {
+    public void testClearUserData() throws SQLException, DataAccessException {
         UserService.clearUserData();
 
         assertTrue(MockedDB.allUserData.isEmpty());
