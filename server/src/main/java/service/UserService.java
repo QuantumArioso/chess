@@ -10,10 +10,11 @@ import java.sql.SQLException;
 public class UserService {
     public RegisterResult register(RegisterRequest registerRequest) throws DataAccessException, SQLException {
         String username = registerRequest.username();
-        UserDAO userDAO = new MemoryUserDAO();
+        UserDAO userDAO = new SqlUserDAO();
         AuthDAO authDAO = new MemoryAuthDAO();
+        UserDAO memoryUserDAO = new MemoryUserDAO();
 
-        if (userDAO.getUser(username) != null) {
+        if (memoryUserDAO.getUser(username) != null) {
             throw new UnavailableException();
         }
 

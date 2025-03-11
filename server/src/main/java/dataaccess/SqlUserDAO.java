@@ -3,12 +3,14 @@ package dataaccess;
 import model.UserData;
 import org.mindrot.jbcrypt.BCrypt;
 
+import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Properties;
 
+import static dataaccess.DatabaseManager.getConnection;
+
 public class SqlUserDAO extends SqlDAO implements UserDAO {
-    private final Properties properties = new Properties();
 
     @Override
     public UserData getUser(String username) {
@@ -16,15 +18,14 @@ public class SqlUserDAO extends SqlDAO implements UserDAO {
     }
 
     @Override
-    public void createUser(UserData userData) throws SQLException {
+    public void createUser(UserData userData) throws SQLException, DataAccessException {
         String username = userData.username();
         String hashedPassword = hashUserPassword(userData.password());
         String email = userData.email();
-        var conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/pet_store",
-                properties.getProperty("db.user"), properties.getProperty("db.password"));
+        Connection conn = DatabaseManager.getConnection();
 
         if (username.matches("[a-zA-Z]+")) {
-            var statement = "INSERT INTO users (username, hashedPassword, email) VALUES(?, ?, ?)";
+            var statement = "INSERT INTO user (username, hashedPassword, email) VALUES(?, ?, ?)";
             try (var preparedStatement = conn.prepareStatement(statement)) {
                 preparedStatement.setString(1, username);
                 preparedStatement.setString(2, hashedPassword);

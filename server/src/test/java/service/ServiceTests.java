@@ -13,6 +13,8 @@ import model.GameData;
 import model.UserData;
 import org.junit.jupiter.api.*;
 
+import java.sql.SQLException;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 public class ServiceTests {
@@ -26,7 +28,7 @@ public class ServiceTests {
     int gameID;
 
     @BeforeEach
-    public void setup() throws DataAccessException {
+    public void setup() throws DataAccessException, SQLException {
         userService = new UserService();
         gameService = new GameService();
         authService = new AuthService();
@@ -50,7 +52,7 @@ public class ServiceTests {
 
     @Test
     @DisplayName("User: Success Register")
-    public void successRegister() throws DataAccessException {
+    public void successRegister() throws DataAccessException, SQLException {
         RegisterRequest newRequest = new RegisterRequest("raine", "whispers", "bard_magic@gmail.com");
         RegisterResult result = userService.register(newRequest);
 
