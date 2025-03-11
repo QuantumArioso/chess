@@ -7,6 +7,8 @@ import service.AuthService;
 import service.GameService;
 import service.UserService;
 
+import java.sql.SQLException;
+
 public class Handler {
     public static EmptyResult clearDatabase() {
         UserService.clearUserData();
@@ -16,7 +18,7 @@ public class Handler {
         return new EmptyResult();
     }
 
-    public static RegisterResult register(RegisterRequest request) throws DataAccessException {
+    public static RegisterResult register(RegisterRequest request) throws DataAccessException, SQLException {
         UserService service = new UserService();
         return service.register(request);
     }

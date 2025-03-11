@@ -5,8 +5,10 @@ import handler.*;
 import model.AuthData;
 import model.UserData;
 
+import java.sql.SQLException;
+
 public class UserService {
-    public RegisterResult register(RegisterRequest registerRequest) throws DataAccessException {
+    public RegisterResult register(RegisterRequest registerRequest) throws DataAccessException, SQLException {
         String username = registerRequest.username();
         UserDAO userDAO = new MemoryUserDAO();
         AuthDAO authDAO = new MemoryAuthDAO();

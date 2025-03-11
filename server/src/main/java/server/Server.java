@@ -6,6 +6,7 @@ import dataaccess.*;
 import handler.*;
 import spark.*;
 
+import java.sql.SQLException;
 import java.util.Map;
 import java.util.Set;
 
@@ -54,6 +55,8 @@ public class Server {
         }
         catch (BadRequestException e) {
             return errorHandler(e.getMessage(), req, res, 400);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
 
