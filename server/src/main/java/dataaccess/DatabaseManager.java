@@ -40,24 +40,44 @@ public class DatabaseManager {
         try {
             var statement = "CREATE DATABASE IF NOT EXISTS " + DATABASE_NAME;
             var conn = DriverManager.getConnection(CONNECTION_URL, USER, PASSWORD);
-            var user_statement = "CREATE TABLE IF NOT EXISTS user (username VARCHAR(100) PRIMARY KEY, " +
-                    "password VARCHAR(100), email VARCHAR(100))";
-            var auth_statement = "CREATE TABLE IF NOT EXISTS auth (authToken VARCHAR(36) PRIMARY KEY, " +
-                    "username VARCHAR(100) FOREIGN KEY)";
-            var game_statement = "CREATE TABLE IF NOT EXISTS game (gameID INT AUTO_INCREMENT PRIMARY KEY, " +
-                    "whiteUsername VARCHAR(100) FOREIGN KEY, blackUsername VARCHAR(100) FOREIGN KEY," +
-                    "gameName VARCHAR(100), game)";
+            conn.setCatalog(DATABASE_NAME);
+
+            var user_statement = "CREATE TABLE IF NOT EXISTS user (" +
+                    "username VARCHAR(100) PRIMARY KEY, " +
+                    "password VARCHAR(100), " +
+                    "email VARCHAR(100)" +
+                    ")";
+            var auth_statement = "CREATE TABLE IF NOT EXISTS auth (" +
+                    "authToken VARCHAR(36) PRIMARY KEY, " +
+                    "username VARCHAR(100) " +
+                    ")";
+            var game_statement = "CREATE TABLE IF NOT EXISTS game (" +
+                    "gameID INT AUTO_INCREMENT PRIMARY KEY, " +
+                    "whiteUsername VARCHAR(100), " +
+                    "blackUsername VARCHAR(100), " +
+                    "gameName VARCHAR(100), " +
+                    "game JSON" +
+                    ")";
             try (var preparedStatement = conn.prepareStatement(statement)) {
                 preparedStatement.executeUpdate();
             }
             try (var preparedStatement = conn.prepareStatement(user_statement)) {
                 preparedStatement.executeUpdate();
             }
+            catch (SQLException e) {
+                throw new DataAccessException("User problem: " + e.getMessage());
+            }
             try (var preparedStatement = conn.prepareStatement(auth_statement)) {
                 preparedStatement.executeUpdate();
             }
+            catch (SQLException e) {
+                throw new DataAccessException("Auth problem: " + e.getMessage());
+            }
             try (var preparedStatement = conn.prepareStatement(game_statement)) {
                 preparedStatement.executeUpdate();
+            }
+            catch (SQLException e) {
+                throw new DataAccessException("Game problem: " + e.getMessage());
             }
         } catch (SQLException e) {
             throw new DataAccessException(e.getMessage());
