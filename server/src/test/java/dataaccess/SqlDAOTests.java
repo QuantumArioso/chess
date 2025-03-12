@@ -1,5 +1,6 @@
 package dataaccess;
 
+import model.AuthData;
 import model.UserData;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -104,6 +105,37 @@ public class SqlDAOTests {
     @DisplayName("Create Auth Invalid Username")
     void testCreateAuthNegative() {
         assertThrows(UnauthorizedException.class, () -> authDAO.createAuth("raine}; --DROP"));
+    }
+
+    @Test
+    @DisplayName("Get Auth Data Success")
+    void testGetAuthPositive() throws SQLException, DataAccessException {
+        String authToken = authDAO.createAuth("rainewhispers").authToken();
+        AuthData authData = authDAO.getAuth(authToken);
+
+        assertEquals(authToken, authData.authToken());
+        assertEquals("rainewhispers", authData.username());
+    }
+
+    @Test
+    @DisplayName("Get Auth Data Invalid authToken")
+    void testGetAuthNegative() throws SQLException, DataAccessException {
+        assertNull(authDAO.getAuth("not an authToken"));
+    }
+
+    @Test
+    @DisplayName("Delete Auth Data Success")
+    void testDeleteAuthPositive() throws SQLException, DataAccessException {
+        String authToken = authDAO.createAuth("rainewhispers").authToken();
+        authDAO.deleteAuthData(authToken);
+
+        var statement = "SELECT authToken FROM auth WHERE authToken=? ";
+        try (var preparedStatement = conn.prepareStatement(statement)) {
+            preparedStatement.setString(1, authToken);
+            try (var results = preparedStatement.executeQuery()) {
+                assertFalse(results.next());
+            }
+        }
     }
 
     @Test
