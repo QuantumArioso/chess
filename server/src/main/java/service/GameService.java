@@ -21,6 +21,9 @@ public class GameService {
 
         GameDAO gameDAO = new MemoryGameDAO();
         GameData gameData = gameDAO.addNewGame(gameCreateRequest.gameName());
+        if (gameData == null) {
+            throw new BadRequestException();
+        }
 
         return new GameCreateResult(gameData.gameID());
     }

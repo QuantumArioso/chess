@@ -1,6 +1,7 @@
 package dataaccess;
 
 import model.AuthData;
+import model.GameData;
 import model.UserData;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -149,6 +150,33 @@ public class SqlDAOTests {
                 assertFalse(results.next());
             }
         }
+    }
+
+    @Test
+    @DisplayName("Add new game success")
+    void testAddNewGamePositive() throws SQLException {
+        String gameName = "New Game";
+        GameData gameData = gameDAO.addNewGame(gameName);
+
+        var statement = "SELECT gameID, gameName FROM game WHERE gameName=? ";
+        try (var preparedStatement = conn.prepareStatement(statement)) {
+            preparedStatement.setString(1, gameName);
+            try (var results = preparedStatement.executeQuery()) {
+                boolean bool = results.next();
+                assertTrue(bool);
+                while (bool) {
+                    int dbGameID = results.getInt("gameID");
+                    assertEquals(gameData.gameID(), dbGameID);
+                    bool = results.next();
+                }
+            }
+        }
+    }
+
+    @Test
+    @DisplayName("Add new game invalid game name")
+    void testAddNewGameNegative() {
+        assertNull(gameDAO.addNewGame("game}; --DROP"));
     }
 
     @Test
