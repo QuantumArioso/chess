@@ -6,7 +6,6 @@ import com.google.gson.Gson;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.ArrayList;
 
 public class SqlGameDAO extends SqlDAO implements GameDAO {
@@ -14,7 +13,7 @@ public class SqlGameDAO extends SqlDAO implements GameDAO {
 
     public GameData addNewGame(String gameName) {
         ChessGame chessGame = new ChessGame();
-        String jsonChessGame = convertToJSON(chessGame);
+        String jsonChessGame = convertGameToJson(chessGame);
         Connection conn;
         try {
             conn = DatabaseManager.getConnection();
@@ -34,18 +33,44 @@ public class SqlGameDAO extends SqlDAO implements GameDAO {
             gameCounter++;
             return new GameData(gameCounter, null, null, gameName, chessGame);
         }
-
-        //how do I get the gameID? two different games could have the same name...
         return null;
     }
 
-    private String convertToJSON(ChessGame chessGame) {
+    private String convertGameToJson(ChessGame chessGame) {
         var serializer = new Gson();
         return serializer.toJson(chessGame);
     }
 
     public GameData getGameData(int gameID) {
-        throw new RuntimeException("Not implemented");
+        Connection conn;
+        try {
+            conn = DatabaseManager.getConnection();
+        } catch (DataAccessException e) {
+            throw new RuntimeException(e);
+        }
+
+        var statement = "SELECT gameID, whiteUsername, blackUsername, gameName, game FROM game WHERE gameID=? ";
+        try (var preparedStatement = conn.prepareStatement(statement)) {
+            preparedStatement.setInt(1, gameID);
+            try (var results = preparedStatement.executeQuery()) {
+                while (results.next()) {
+                    String dbWhiteUsername = results.getString("whiteUsername");
+                    String dbBlackUsername = results.getString("blackUsername");
+                    String dbGameName = results.getString("gameName");
+                    String dbJsonGame = results.getString("game");
+                    ChessGame dbGame = convertJsonToGame(dbJsonGame);
+                    return new GameData(gameID, dbWhiteUsername, dbBlackUsername, dbGameName, dbGame);
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return null;
+    }
+
+    private ChessGame convertJsonToGame(String jsonGame) {
+        var serializer = new Gson();
+        return serializer.fromJson(jsonGame, ChessGame.class);
     }
 
     public GameData updateGamePlayer(int gameID, ChessGame.TeamColor playerColor, String username) {

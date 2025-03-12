@@ -1,5 +1,6 @@
 package dataaccess;
 
+import chess.ChessGame;
 import model.AuthData;
 import model.GameData;
 import model.UserData;
@@ -177,6 +178,22 @@ public class SqlDAOTests {
     @DisplayName("Add new game invalid game name")
     void testAddNewGameNegative() {
         assertNull(gameDAO.addNewGame("game}; --DROP"));
+    }
+
+    @Test
+    @DisplayName("Get game data success")
+    void testGetGameDataPositive() {
+        GameData firstGameData = gameDAO.addNewGame("New Game");
+        GameData gameData = gameDAO.getGameData(firstGameData.gameID());
+
+        ChessGame game = gameData.game();
+        assertEquals(ChessGame.TeamColor.WHITE, game.getTeamTurn());
+    }
+
+    @Test
+    @DisplayName("Get game invalid gameID")
+    void testGetGameDataNegative() {
+        assertNull(gameDAO.getGameData(-1));
     }
 
     @Test
