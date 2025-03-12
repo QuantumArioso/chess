@@ -8,7 +8,8 @@ import java.util.ArrayList;
 
 
 public class MemoryUserDAO implements UserDAO {
-    public UserData getUser(String username) {
+    @Override
+    public UserData getUser(String username, String password) {
         for (UserData data : MockedDB.allUserData) {
             if (data.username().equals(username)) {
                 return data;
@@ -17,6 +18,7 @@ public class MemoryUserDAO implements UserDAO {
         return null;
     }
 
+    @Override
     public void createUser(UserData userData) {
         MockedDB.allUserData.add(userData);
     }

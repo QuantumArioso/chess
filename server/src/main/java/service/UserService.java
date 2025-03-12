@@ -10,10 +10,11 @@ import java.sql.SQLException;
 public class UserService {
     public RegisterResult register(RegisterRequest registerRequest) throws DataAccessException, SQLException {
         String username = registerRequest.username();
+        String password = registerRequest.password();
         AuthDAO authDAO = new MemoryAuthDAO();
-        UserDAO userDAO = new MemoryUserDAO();
+        UserDAO userDAO = new SqlUserDAO();
 
-        if (userDAO.getUser(username) != null) {
+        if (userDAO.getUser(username, password) != null) {
             throw new UnavailableException();
         }
 
@@ -25,11 +26,12 @@ public class UserService {
     }
 
     public LoginResult login(LoginRequest loginRequest) throws DataAccessException {
-        UserDAO userDAO = new MemoryUserDAO();
+        UserDAO userDAO = new SqlUserDAO();
         AuthDAO authDAO = new MemoryAuthDAO();
         String username = loginRequest.username();
+        String password = loginRequest.password();
 
-        UserData userData = userDAO.getUser(username);
+        UserData userData = userDAO.getUser(username, password);
         if (userData == null) {
             throw new UnauthorizedException();
         }
@@ -47,6 +49,7 @@ public class UserService {
         return userData.password().equals(password);
     }
 
+
     public EmptyResult logout(LogoutRequest logoutRequest) throws DataAccessException {
         AuthDAO authDAO = new MemoryAuthDAO();
         String authToken = logoutRequest.authToken();
@@ -58,7 +61,7 @@ public class UserService {
     }
 
     public static void clearUserData() throws SQLException, DataAccessException {
-        UserDAO userDAO = new MemoryUserDAO();
+        UserDAO userDAO = new SqlUserDAO();
         userDAO.deleteAllUserData();
     }
 }

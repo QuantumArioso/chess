@@ -14,8 +14,31 @@ import static dataaccess.DatabaseManager.getConnection;
 public class SqlUserDAO extends SqlDAO implements UserDAO {
 
     @Override
-    public UserData getUser(String username) {
-        throw new RuntimeException("Not implemented");
+    public UserData getUser(String username, String password) {
+        Connection conn;
+        try {
+            conn = DatabaseManager.getConnection();
+        } catch (DataAccessException e) {
+            throw new RuntimeException(e);
+        }
+
+        var statement = "SELECT username, password, email FROM user WHERE username=? ";
+        try (var preparedStatement = conn.prepareStatement(statement)) {
+            preparedStatement.setString(1, username);
+            try (var results = preparedStatement.executeQuery()) {
+                while (results.next()) {
+                    var dbHashedPassword = results.getString("password");
+                    var dbEmail = results.getString("email");
+                    if (verifyUser(dbHashedPassword, password)) {
+                        return new UserData(username, password, dbEmail);
+                    }
+                }
+            }
+        }
+        catch (SQLException e) {
+            return null;
+        }
+        return null;
     }
 
     @Override
@@ -42,6 +65,10 @@ public class SqlUserDAO extends SqlDAO implements UserDAO {
         return BCrypt.hashpw(clearTextPassword, BCrypt.gensalt());
     }
 
+    private boolean verifyUser(String hashedPassword, String providedClearTextPassword) {
+        return BCrypt.checkpw(providedClearTextPassword, hashedPassword);
+    }
+
     @Override
     public void deleteAllUserData() throws DataAccessException, SQLException {
         Connection conn = DatabaseManager.getConnection();
@@ -50,11 +77,4 @@ public class SqlUserDAO extends SqlDAO implements UserDAO {
             preparedStatement.executeUpdate();
         }
     }
-
-//    private boolean verifyUser(String username, String providedClearTextPassword) {
-//        // read the previously hashed password from the database
-//        var hashedPassword = readHashedPasswordFromDatabase(username);
-//
-//        return BCrypt.checkpw(providedClearTextPassword, hashedPassword);
-//    }
 }

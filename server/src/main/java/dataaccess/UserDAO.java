@@ -5,7 +5,7 @@ import model.UserData;
 import java.sql.SQLException;
 
 public interface UserDAO {
-    UserData getUser(String username);
+    UserData getUser(String username, String password);
 
     void createUser(UserData userData) throws SQLException, DataAccessException;
 
