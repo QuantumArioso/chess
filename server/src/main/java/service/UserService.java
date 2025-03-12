@@ -40,9 +40,12 @@ public class UserService {
             throw new UnauthorizedException();
         }
 
-        AuthData authData = authDAO.createAuth(username);
-
-        return new LoginResult(username, authData.authToken());
+        try {
+            AuthData authData = authDAO.createAuth(username);
+            return new LoginResult(username, authData.authToken());
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private boolean validatePassword(UserData userData, String password) {

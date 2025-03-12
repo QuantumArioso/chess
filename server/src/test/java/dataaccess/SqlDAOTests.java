@@ -14,12 +14,14 @@ import static org.junit.jupiter.api.Assertions.*;
 public class SqlDAOTests {
     Connection conn;
     UserDAO userDAO;
+    AuthDAO authDAO;
     UserData userData;
 
     @BeforeEach
     void setup() throws DataAccessException, SQLException {
         conn = DatabaseManager.getConnection();
         userDAO = new SqlUserDAO();
+        authDAO = new SqlAuthDAO();
 
         userData = new UserData("rainewhispers", "viola", "bard@gmail.com");
         userDAO.createUser(userData);
@@ -28,6 +30,7 @@ public class SqlDAOTests {
     @AfterEach
     void teardown() throws SQLException, DataAccessException {
         userDAO.deleteAllUserData();
+        authDAO.deleteAllAuthData();
     }
 
     @Test
@@ -50,7 +53,6 @@ public class SqlDAOTests {
     void testCreateUserPositive() throws DataAccessException, SQLException {
         UserData userData = new UserData("arioso", "hello8", "ari@gmail.com");
         userDAO.createUser(userData);
-        var conn = DatabaseManager.getConnection();
 
         var statement = "SELECT username FROM user WHERE username=? ";
         try (var preparedStatement = conn.prepareStatement(statement)) {
@@ -59,7 +61,6 @@ public class SqlDAOTests {
                 assertTrue(results.next());
             }
         }
-
     }
 
     @Test
@@ -74,6 +75,39 @@ public class SqlDAOTests {
     void testDeleteAllUserData() throws SQLException, DataAccessException {
         userDAO.deleteAllUserData();
         var statement = "SELECT username FROM user WHERE username=? ";
+        try (var preparedStatement = conn.prepareStatement(statement)) {
+            preparedStatement.setString(1, "rainewhispers");
+            try (var results = preparedStatement.executeQuery()) {
+                assertFalse(results.next());
+            }
+        }
+    }
+
+    @Test
+    @DisplayName("Create Auth Success")
+    void testCreateAuthPositive() throws SQLException, DataAccessException {
+        authDAO.createAuth("rainewhispers");
+
+        var statement = "SELECT username FROM auth WHERE username=? ";
+        try (var preparedStatement = conn.prepareStatement(statement)) {
+            preparedStatement.setString(1, "rainewhispers");
+            try (var results = preparedStatement.executeQuery()) {
+                assertTrue(results.next());
+            }
+        }
+    }
+
+    @Test
+    @DisplayName("Create Auth Invalid Username")
+    void testCreateAuthNegative() {
+        assertThrows(UnauthorizedException.class, () -> authDAO.createAuth("raine}; --DROP"));
+    }
+
+    @Test
+    @DisplayName("Delete all auth data")
+    void testDeleteAllAuthData() throws SQLException, DataAccessException {
+        authDAO.deleteAllAuthData();
+        var statement = "SELECT username FROM auth WHERE username=? ";
         try (var preparedStatement = conn.prepareStatement(statement)) {
             preparedStatement.setString(1, "rainewhispers");
             try (var results = preparedStatement.executeQuery()) {

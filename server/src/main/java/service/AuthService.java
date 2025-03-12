@@ -17,6 +17,10 @@ public class AuthService {
 
     public static void clearAuthData() {
         AuthDAO authDAO = new MemoryAuthDAO();
-        authDAO.deleteAllAuthData();
+        try {
+            authDAO.deleteAllAuthData();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 }
