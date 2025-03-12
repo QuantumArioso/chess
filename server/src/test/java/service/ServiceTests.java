@@ -204,7 +204,7 @@ public class ServiceTests {
 
     @Test
     @DisplayName("Game: Success Clear Game Data")
-    public void testClearGameData() {
+    public void testClearGameData() throws SQLException, DataAccessException {
         GameService.clearGameData();
 
         assertTrue(MockedDB.allGameData.isEmpty());

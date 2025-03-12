@@ -6,6 +6,8 @@ import db.MockedDB;
 import handler.*;
 import model.GameData;
 
+import java.sql.SQLException;
+
 public class GameService {
     public GameListResult listGames(GameListRequest gameListRequest) throws UnauthorizedException {
         AuthService.validateAuth(gameListRequest.authToken());
@@ -49,7 +51,7 @@ public class GameService {
         return gameData.blackUsername() == null;
     }
 
-    public static void clearGameData() {
+    public static void clearGameData() throws SQLException, DataAccessException {
         GameDAO gameDAO = new MemoryGameDAO();
         gameDAO.deleteAllGameData();
         MemoryGameDAO.setGameCounter(1);

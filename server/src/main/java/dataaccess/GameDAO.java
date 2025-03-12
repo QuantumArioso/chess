@@ -3,6 +3,7 @@ package dataaccess;
 import chess.ChessGame;
 import model.GameData;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 
 public interface GameDAO {
@@ -14,5 +15,5 @@ public interface GameDAO {
 
     ArrayList<GameData> getAllGameData();
 
-    void deleteAllGameData();
+    void deleteAllGameData() throws DataAccessException, SQLException;
 }

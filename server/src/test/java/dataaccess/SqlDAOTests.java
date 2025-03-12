@@ -15,6 +15,7 @@ public class SqlDAOTests {
     Connection conn;
     UserDAO userDAO;
     AuthDAO authDAO;
+    GameDAO gameDAO;
     UserData userData;
 
     @BeforeEach
@@ -22,6 +23,7 @@ public class SqlDAOTests {
         conn = DatabaseManager.getConnection();
         userDAO = new SqlUserDAO();
         authDAO = new SqlAuthDAO();
+        gameDAO = new SqlGameDAO();
 
         userData = new UserData("rainewhispers", "viola", "bard@gmail.com");
         userDAO.createUser(userData);
@@ -31,6 +33,7 @@ public class SqlDAOTests {
     void teardown() throws SQLException, DataAccessException {
         userDAO.deleteAllUserData();
         authDAO.deleteAllAuthData();
+        gameDAO.deleteAllGameData();
     }
 
     @Test
@@ -110,6 +113,19 @@ public class SqlDAOTests {
         var statement = "SELECT username FROM auth WHERE username=? ";
         try (var preparedStatement = conn.prepareStatement(statement)) {
             preparedStatement.setString(1, "rainewhispers");
+            try (var results = preparedStatement.executeQuery()) {
+                assertFalse(results.next());
+            }
+        }
+    }
+
+    @Test
+    @DisplayName("Delete all game data")
+    void testDeleteAllGameData() throws SQLException, DataAccessException {
+        gameDAO.deleteAllGameData();
+        var statement = "SELECT gameID FROM game WHERE gameID=? ";
+        try (var preparedStatement = conn.prepareStatement(statement)) {
+            preparedStatement.setString(1, "1");
             try (var results = preparedStatement.executeQuery()) {
                 assertFalse(results.next());
             }
