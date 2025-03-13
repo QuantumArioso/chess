@@ -197,6 +197,21 @@ public class SqlDAOTests {
     }
 
     @Test
+    @DisplayName("Update game player success")
+    void testUpdateGamePlayerPositive() {
+        GameData firstGameData = gameDAO.addNewGame("New Game");
+        GameData gameData = gameDAO.updateGamePlayer(firstGameData.gameID(), ChessGame.TeamColor.BLACK, "rainewhispers");
+        assertEquals("rainewhispers", gameData.blackUsername());
+    }
+
+    @Test
+    @DisplayName("Update game player invalid gameID")
+    void testUpdateGamePlayerNegative() {
+        gameDAO.addNewGame("New Game");
+        assertNull(gameDAO.updateGamePlayer(-1, ChessGame.TeamColor.BLACK, "rainewhispers"));
+    }
+
+    @Test
     @DisplayName("Delete all game data")
     void testDeleteAllGameData() throws SQLException, DataAccessException {
         gameDAO.deleteAllGameData();

@@ -74,7 +74,41 @@ public class SqlGameDAO extends SqlDAO implements GameDAO {
     }
 
     public GameData updateGamePlayer(int gameID, ChessGame.TeamColor playerColor, String username) {
-        throw new RuntimeException("Not implemented");
+        Connection conn;
+        try {
+            conn = DatabaseManager.getConnection();
+        } catch (DataAccessException e) {
+            throw new RuntimeException(e);
+        }
+        GameData oldGameData = getGameData(gameID);
+        if (oldGameData == null) {
+            return null;
+        }
+        String oldWhiteUsername = oldGameData.whiteUsername();
+        if (oldWhiteUsername == null) {
+            oldWhiteUsername = "";
+        }
+        String oldBlackUsername = oldGameData.blackUsername();
+        if (oldBlackUsername == null) {
+            oldBlackUsername = "";
+        }
+
+        var statement = "UPDATE game SET whiteUsername = ?, blackUsername = ? WHERE gameID = ?";
+        try (var preparedStatement = conn.prepareStatement(statement)) {
+            preparedStatement.setInt(3, gameID);
+            if (playerColor.equals(ChessGame.TeamColor.WHITE)) {
+                preparedStatement.setString(1, username);
+                preparedStatement.setString(2, oldBlackUsername);
+            }
+            else {
+                preparedStatement.setString(1, oldWhiteUsername);
+                preparedStatement.setString(2, username);
+            }
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return getGameData(gameID);
     }
 
     public ArrayList<GameData> getAllGameData() {
