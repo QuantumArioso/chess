@@ -40,6 +40,9 @@ public class DatabaseManager {
         try {
             var statement = "CREATE DATABASE IF NOT EXISTS " + DATABASE_NAME;
             var conn = DriverManager.getConnection(CONNECTION_URL, USER, PASSWORD);
+            try (var preparedStatement = conn.prepareStatement(statement)) {
+                preparedStatement.executeUpdate();
+            }
             conn.setCatalog(DATABASE_NAME);
 
             var user_statement = "CREATE TABLE IF NOT EXISTS user (" +
@@ -58,9 +61,7 @@ public class DatabaseManager {
                     "gameName VARCHAR(100), " +
                     "game JSON" +
                     ")";
-            try (var preparedStatement = conn.prepareStatement(statement)) {
-                preparedStatement.executeUpdate();
-            }
+
             try (var preparedStatement = conn.prepareStatement(user_statement)) {
                 preparedStatement.executeUpdate();
             }
