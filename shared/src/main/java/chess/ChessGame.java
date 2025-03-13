@@ -15,7 +15,7 @@ public class ChessGame {
 
     public ChessGame() {
         board = new ChessBoard();
-        board.resetBoard(); // TODO: should I be doing this?
+        board.resetBoard();
         currentTeam = TeamColor.WHITE;
     }
 

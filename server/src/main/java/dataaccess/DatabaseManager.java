@@ -45,16 +45,16 @@ public class DatabaseManager {
             }
             conn.setCatalog(DATABASE_NAME);
 
-            var user_statement = "CREATE TABLE IF NOT EXISTS user (" +
+            var userStatement = "CREATE TABLE IF NOT EXISTS user (" +
                     "username VARCHAR(100) PRIMARY KEY, " +
                     "password VARCHAR(100), " +
                     "email VARCHAR(100)" +
                     ")";
-            var auth_statement = "CREATE TABLE IF NOT EXISTS auth (" +
+            var authStatement = "CREATE TABLE IF NOT EXISTS auth (" +
                     "authToken VARCHAR(36) PRIMARY KEY, " +
                     "username VARCHAR(100) " +
                     ")";
-            var game_statement = "CREATE TABLE IF NOT EXISTS game (" +
+            var gameStatement = "CREATE TABLE IF NOT EXISTS game (" +
                     "gameID INT AUTO_INCREMENT PRIMARY KEY, " +
                     "whiteUsername VARCHAR(100), " +
                     "blackUsername VARCHAR(100), " +
@@ -62,19 +62,19 @@ public class DatabaseManager {
                     "game JSON" +
                     ")";
 
-            try (var preparedStatement = conn.prepareStatement(user_statement)) {
+            try (var preparedStatement = conn.prepareStatement(userStatement)) {
                 preparedStatement.executeUpdate();
             }
             catch (SQLException e) {
                 throw new DataAccessException("User problem: " + e.getMessage());
             }
-            try (var preparedStatement = conn.prepareStatement(auth_statement)) {
+            try (var preparedStatement = conn.prepareStatement(authStatement)) {
                 preparedStatement.executeUpdate();
             }
             catch (SQLException e) {
                 throw new DataAccessException("Auth problem: " + e.getMessage());
             }
-            try (var preparedStatement = conn.prepareStatement(game_statement)) {
+            try (var preparedStatement = conn.prepareStatement(gameStatement)) {
                 preparedStatement.executeUpdate();
             }
             catch (SQLException e) {
