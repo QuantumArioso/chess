@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.ArrayList;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -209,6 +210,33 @@ public class SqlDAOTests {
     void testUpdateGamePlayerNegative() {
         gameDAO.addNewGame("New Game");
         assertNull(gameDAO.updateGamePlayer(-1, ChessGame.TeamColor.BLACK, "rainewhispers"));
+    }
+
+    @Test
+    @DisplayName("Get all game data success")
+    void testGetAllGameDataPositive() {
+        ArrayList<GameData> expectedGameData = new ArrayList<>();
+        expectedGameData.add(gameDAO.addNewGame("New Game"));
+        expectedGameData.add(gameDAO.addNewGame("New Game"));
+        expectedGameData.add(gameDAO.addNewGame("The Boiling Isles"));
+        expectedGameData.add(gameDAO.addNewGame("Hexside"));
+
+        ArrayList<GameData> actualGameData = gameDAO.getAllGameData();
+        assertEquals(expectedGameData.size(), actualGameData.size());
+        for (int i = 0; i < actualGameData.size(); i++) {
+            // idk if my games are actually equal...
+            assertEquals(expectedGameData.get(i).gameID(), actualGameData.get(i).gameID());
+            assertEquals(expectedGameData.get(i).gameName(), actualGameData.get(i).gameName());
+        }
+    }
+
+    @Test
+    @DisplayName("Get all game data no game data")
+    void testGetAllGameDataNegative() throws SQLException, DataAccessException {
+        gameDAO.deleteAllGameData();
+        ArrayList<GameData> expectedGameData = new ArrayList<>();
+        ArrayList<GameData> actualGameData = gameDAO.getAllGameData();
+        assertEquals(expectedGameData.size(), actualGameData.size());
     }
 
     @Test

@@ -80,6 +80,7 @@ public class SqlGameDAO extends SqlDAO implements GameDAO {
         } catch (DataAccessException e) {
             throw new RuntimeException(e);
         }
+
         GameData oldGameData = getGameData(gameID);
         if (oldGameData == null) {
             return null;
@@ -112,7 +113,31 @@ public class SqlGameDAO extends SqlDAO implements GameDAO {
     }
 
     public ArrayList<GameData> getAllGameData() {
-        throw new RuntimeException("Not implemented");
+        Connection conn;
+        try {
+            conn = DatabaseManager.getConnection();
+        } catch (DataAccessException e) {
+            throw new RuntimeException(e);
+        }
+
+        ArrayList<GameData> allGameData = new ArrayList<>();
+        var statement = "SELECT gameID, whiteUsername, blackUsername, gameName, game FROM game ";
+        try (var preparedStatement = conn.prepareStatement(statement)) {
+            try (var results = preparedStatement.executeQuery()) {
+                while (results.next()) {
+                    int dbGameID = results.getInt("gameID");
+                    String dbWhiteUsername = results.getString("whiteUsername");
+                    String dbBlackUsername = results.getString("blackUsername");
+                    String dbGameName = results.getString("gameName");
+                    String dbJsonGame = results.getString("game");
+                    ChessGame dbGame = convertJsonToGame(dbJsonGame);
+                    allGameData.add(new GameData(dbGameID, dbWhiteUsername, dbBlackUsername, dbGameName, dbGame));
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return allGameData;
     }
 
     public void deleteAllGameData() throws DataAccessException, SQLException {
