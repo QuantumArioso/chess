@@ -11,7 +11,7 @@ import java.sql.SQLException;
 public class GameService {
     public GameListResult listGames(GameListRequest gameListRequest) throws UnauthorizedException {
         AuthService.validateAuth(gameListRequest.authToken());
-        GameDAO gameDAO = new MemoryGameDAO();
+        GameDAO gameDAO = new SqlGameDAO();
 
         return new GameListResult(gameDAO.getAllGameData());
     }
@@ -19,7 +19,7 @@ public class GameService {
     public GameCreateResult createGame(GameCreateRequest gameCreateRequest) throws DataAccessException {
         AuthService.validateAuth(gameCreateRequest.authToken());
 
-        GameDAO gameDAO = new MemoryGameDAO();
+        GameDAO gameDAO = new SqlGameDAO();
         GameData gameData = gameDAO.addNewGame(gameCreateRequest.gameName());
         if (gameData == null) {
             throw new BadRequestException();
@@ -31,11 +31,11 @@ public class GameService {
     public EmptyResult joinGame(GameJoinRequest gameJoinRequest) throws DataAccessException {
         String authToken = gameJoinRequest.authToken();
         AuthService.validateAuth(authToken);
-        AuthDAO authDAO = new MemoryAuthDAO();
+        AuthDAO authDAO = new SqlAuthDAO();
         String username = authDAO.getAuth(authToken).username();
         int gameID = gameJoinRequest.gameID();
 
-        GameDAO gameDAO = new MemoryGameDAO();
+        GameDAO gameDAO = new SqlGameDAO();
         GameData gameData = gameDAO.getGameData(gameID);
 
         if (!playerNotInUse(gameData, gameJoinRequest.playerColor())) {
@@ -55,8 +55,7 @@ public class GameService {
     }
 
     public static void clearGameData() throws SQLException, DataAccessException {
-        GameDAO gameDAO = new MemoryGameDAO();
+        GameDAO gameDAO = new SqlGameDAO();
         gameDAO.deleteAllGameData();
-        MemoryGameDAO.setGameCounter(1);
     }
 }

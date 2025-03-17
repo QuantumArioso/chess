@@ -11,7 +11,7 @@ public class UserService {
     public RegisterResult register(RegisterRequest registerRequest) throws DataAccessException, SQLException {
         String username = registerRequest.username();
         String password = registerRequest.password();
-        AuthDAO authDAO = new MemoryAuthDAO();
+        AuthDAO authDAO = new SqlAuthDAO();
         UserDAO userDAO = new SqlUserDAO();
 
         if (userDAO.getUser(username, password) != null) {
@@ -27,7 +27,7 @@ public class UserService {
 
     public LoginResult login(LoginRequest loginRequest) throws DataAccessException {
         UserDAO userDAO = new SqlUserDAO();
-        AuthDAO authDAO = new MemoryAuthDAO();
+        AuthDAO authDAO = new SqlAuthDAO();
         String username = loginRequest.username();
         String password = loginRequest.password();
 
@@ -54,7 +54,7 @@ public class UserService {
 
 
     public EmptyResult logout(LogoutRequest logoutRequest) throws DataAccessException {
-        AuthDAO authDAO = new MemoryAuthDAO();
+        AuthDAO authDAO = new SqlAuthDAO();
         String authToken = logoutRequest.authToken();
         AuthService.validateAuth(authToken);
 

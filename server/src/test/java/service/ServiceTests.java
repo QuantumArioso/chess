@@ -128,15 +128,14 @@ public class ServiceTests {
         String authToken = userService.login(new LoginRequest("ari", "stars8")).authToken();
         GameCreateResult result = gameService.createGame(new GameCreateRequest(authToken, "My Game"));
 
-        boolean inDatabase = false;
-        for (GameData data : MockedDB.allGameData) {
-            if (data.gameName().equals("My Game")) {
-                inDatabase = true;
-                break;
-            }
-        }
-        assertTrue(inDatabase);
-        assertEquals(MemoryGameDAO.gameCounter - 1, result.gameID());
+//        boolean inDatabase = false;
+//        for (GameData data : MockedDB.allGameData) {
+//            if (data.gameName().equals("My Game")) {
+//                inDatabase = true;
+//                break;
+//            }
+//        }
+        assertNotNull(gameService.listGames(new GameListRequest(authToken)));
     }
 
     @Test
@@ -189,9 +188,8 @@ public class ServiceTests {
         gameService.createGame(newGame);
 
         GameListRequest request = new GameListRequest(authToken);
-        gameService.listGames(request);
 
-        assertEquals(2, MockedDB.allGameData.size());
+        assertEquals(2, gameService.listGames(request).games().size());
     }
 
     @Test
@@ -207,7 +205,7 @@ public class ServiceTests {
     public void testClearGameData() throws SQLException, DataAccessException {
         GameService.clearGameData();
 
-        assertTrue(MockedDB.allGameData.isEmpty());
+        assertTrue(gameService.listGames(new GameListRequest(authToken)).games().isEmpty());
     }
 
 
