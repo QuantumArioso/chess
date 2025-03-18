@@ -7,8 +7,6 @@ import static ui.EscapeSequences.*;
 
 public class DrawChessBoard {
     private static final int BOARD_WIDTH = 8;
-    private static final int SQUARE_WIDTH = 2;
-    private static final int SQUARE_HEIGHT = 3;
 
     public static void main(String[] args) {
         var out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
@@ -17,9 +15,18 @@ public class DrawChessBoard {
     }
 
     private static void drawBoard(PrintStream out) {
+        drawLetterText(out);
         for (int col = 1; col <= BOARD_WIDTH; col++) {
+            out.print(9 - col + " ");
             drawRowOfSquares(out, col % 2 == 0, col);
+            out.println(" " + (9 - col));
         }
+        drawLetterText(out);
+    }
+
+    private static void drawLetterText(PrintStream out) {
+        String letters = "   a  b  c  d  e  f  g  h   ";
+        out.println(letters);
     }
 
     private static void drawRowOfSquares(PrintStream out, boolean lighterFirst, int col) {
@@ -43,7 +50,6 @@ public class DrawChessBoard {
             }
         }
         resetColor(out);
-        out.println();
     }
 
     private static String mapPiece(PrintStream out, int row, int col) {
