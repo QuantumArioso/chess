@@ -4,6 +4,8 @@ import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 
 import static ui.EscapeSequences.*;
+
+import chess.ChessBoard;
 import chess.ChessGame;
 
 public class drawChessBoard {
@@ -18,61 +20,79 @@ public class drawChessBoard {
     }
 
     private static void drawBoard(PrintStream out) {
-        for (int i = 0; i < BOARD_WIDTH; i++) {
-            drawRowOfSquares(out, i % 2 == 0);
+        for (int col = 1; col <= BOARD_WIDTH; col++) {
+            drawRowOfSquares(out, col % 2 == 0, col);
         }
     }
 
-    private static void drawRowOfSquares(PrintStream out, boolean magentaFirst) {
-        if (magentaFirst) {
-            for (int i = 0; i < SQUARE_HEIGHT; i++) {
-                for (int j = 0; j < BOARD_WIDTH; j++) {
-                    if (j % 2 == 0) {
-                        setMagenta(out);
-                    } else {
-                        setBlue(out);
-                    }
-                    drawSquare(out);
-                    if (i == SQUARE_HEIGHT / 2) {
-                        printPlayer(out, " P ");
-                    } else {
-                        printPlayer(out, EMPTY);
-                    }
-                    drawSquare(out);
+    private static void drawRowOfSquares(PrintStream out, boolean lighterFirst, int col) {
+        if (lighterFirst) {
+            for (int row = 1; row <= BOARD_WIDTH; row++) {
+                if (row % 2 == 0) {
+                    setBlue(out);
+                } else {
+                    setMagenta(out);
                 }
-                resetColor(out);
-                out.println();
+                printPlayer(out, mapPiece(out, col, row));
             }
         } else {
-            for (int i = 0; i < SQUARE_HEIGHT; i++) {
-                for (int j = 0; j < BOARD_WIDTH; j++) {
-                    if (j % 2 == 0) {
-                        setBlue(out);
-                    } else {
-                        setMagenta(out);
-                    }
-                    drawSquare(out);
-                    printPlayer(out, EMPTY);
-                    drawSquare(out);
+            for (int row = 1; row <= BOARD_WIDTH; row++) {
+                if (row % 2 == 0) {
+                    setMagenta(out);
+                } else {
+                    setBlue(out);
                 }
-                resetColor(out);
-                out.println();
+                printPlayer(out, mapPiece(out, col, row));
             }
+        }
+        resetColor(out);
+        out.println();
+    }
+
+    private static String mapPiece(PrintStream out, int row, int col) {
+        if (row != 1 && row != 2 && row != 7 && row != 8) {
+            return EMPTY;
+        }
+
+        if (row == 1 || row == 2) {
+            out.print(SET_TEXT_COLOR_BLACK);
+
+            if (row == 2) {
+                return BLACK_PAWN;
+            } else {
+                return getString(col, BLACK_ROOK, BLACK_KNIGHT, BLACK_BISHOP, BLACK_QUEEN, BLACK_KING);
+            }
+        } else {
+            out.print(SET_TEXT_COLOR_WHITE);
+
+            if (row == 7) {
+                return WHITE_PAWN;
+            } else return getString(col, WHITE_ROOK, WHITE_KNIGHT, WHITE_BISHOP, WHITE_QUEEN, WHITE_KING);
         }
     }
 
-    private static void drawSquare(PrintStream out) {
-        out.print(EMPTY.repeat(SQUARE_WIDTH / 2));
+    private static String getString(int col, String rook, String knight, String bishop, String queen, String king) {
+        if (col == 1 || col == 8) {
+            return rook;
+        } else if (col == 2 || col == 7) {
+            return knight;
+        } else if (col == 3 || col == 6) {
+            return bishop;
+        } else if (col == 4) {
+            return queen;
+        } else {
+            return king;
+        }
     }
 
     private static void setMagenta(PrintStream out) {
         out.print(SET_BG_COLOR_MAGENTA);
-        out.print(SET_TEXT_COLOR_BLACK);
+        out.print(SET_TEXT_COLOR_MAGENTA);
     }
 
     private static void setBlue(PrintStream out) {
         out.print(SET_BG_COLOR_BLUE);
-        out.print(SET_TEXT_COLOR_WHITE);
+        out.print(SET_TEXT_COLOR_BLUE);
     }
 
     private static void resetColor(PrintStream out) {
