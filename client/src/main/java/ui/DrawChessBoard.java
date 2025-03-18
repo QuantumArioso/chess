@@ -5,10 +5,7 @@ import java.nio.charset.StandardCharsets;
 
 import static ui.EscapeSequences.*;
 
-import chess.ChessBoard;
-import chess.ChessGame;
-
-public class drawChessBoard {
+public class DrawChessBoard {
     private static final int BOARD_WIDTH = 8;
     private static final int SQUARE_WIDTH = 2;
     private static final int SQUARE_HEIGHT = 3;
