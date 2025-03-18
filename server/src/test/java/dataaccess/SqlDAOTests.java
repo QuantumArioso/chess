@@ -178,7 +178,7 @@ public class SqlDAOTests {
     @Test
     @DisplayName("Add new game invalid game name")
     void testAddNewGameNegative() {
-        assertNull(gameDAO.addNewGame("game}; --DROP"));
+        assertNull(gameDAO.addNewGame(""));
     }
 
     @Test

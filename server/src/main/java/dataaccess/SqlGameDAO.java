@@ -12,16 +12,13 @@ public class SqlGameDAO extends SqlDAO implements GameDAO {
     public static int gameCounter = 0;
 
     public GameData addNewGame(String gameName) {
-        ChessGame chessGame = new ChessGame();
-        String jsonChessGame = convertGameToJson(chessGame);
-        Connection conn;
-        try {
-            conn = DatabaseManager.getConnection();
-        } catch (DataAccessException e) {
-            throw new RuntimeException(e);
+        if (gameName.isEmpty()) {
+            return null;
         }
 
-        if (gameName.matches("[a-zA-Z _]+")) {
+        ChessGame chessGame = new ChessGame();
+        String jsonChessGame = convertGameToJson(chessGame);
+        try (Connection conn = DatabaseManager.getConnection()){
             var statement = "INSERT INTO game (gameName, game) VALUES(?, ?) ";
             try (var preparedStatement = conn.prepareStatement(statement)) {
                 preparedStatement.setString(1, gameName);
@@ -32,8 +29,9 @@ public class SqlGameDAO extends SqlDAO implements GameDAO {
             }
             gameCounter++;
             return new GameData(gameCounter, null, null, gameName, chessGame);
+        } catch (DataAccessException | SQLException e) {
+            throw new RuntimeException(e);
         }
-        return null;
     }
 
     private String convertGameToJson(ChessGame chessGame) {
@@ -42,30 +40,33 @@ public class SqlGameDAO extends SqlDAO implements GameDAO {
     }
 
     public GameData getGameData(int gameID) {
-        Connection conn;
-        try {
-            conn = DatabaseManager.getConnection();
-        } catch (DataAccessException e) {
-            throw new RuntimeException(e);
-        }
-
-        var statement = "SELECT gameID, whiteUsername, blackUsername, gameName, game FROM game WHERE gameID=? ";
-        try (var preparedStatement = conn.prepareStatement(statement)) {
-            preparedStatement.setInt(1, gameID);
-            try (var results = preparedStatement.executeQuery()) {
-                while (results.next()) {
-                    String dbWhiteUsername = results.getString("whiteUsername");
-                    String dbBlackUsername = results.getString("blackUsername");
-                    String dbGameName = results.getString("gameName");
-                    String dbJsonGame = results.getString("game");
-                    ChessGame dbGame = convertJsonToGame(dbJsonGame);
-                    return new GameData(gameID, dbWhiteUsername, dbBlackUsername, dbGameName, dbGame);
+        try (Connection conn = DatabaseManager.getConnection()){
+            var statement = "SELECT gameID, whiteUsername, blackUsername, gameName, game FROM game WHERE gameID=? ";
+            try (var preparedStatement = conn.prepareStatement(statement)) {
+                preparedStatement.setInt(1, gameID);
+                try (var results = preparedStatement.executeQuery()) {
+                    while (results.next()) {
+                        String dbWhiteUsername = results.getString("whiteUsername");
+                        String dbBlackUsername = results.getString("blackUsername");
+                        String dbGameName = results.getString("gameName");
+                        String dbJsonGame = results.getString("game");
+                        ChessGame dbGame = convertJsonToGame(dbJsonGame);
+                        if (dbWhiteUsername == null || dbWhiteUsername.isEmpty()) {
+                            dbWhiteUsername = null;
+                        }
+                        if (dbBlackUsername == null || dbBlackUsername.isEmpty()) {
+                            dbBlackUsername = null;
+                        }
+                        return new GameData(gameID, dbWhiteUsername, dbBlackUsername, dbGameName, dbGame);
+                    }
                 }
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
             }
-        } catch (SQLException e) {
+            return null;
+        } catch (DataAccessException | SQLException e) {
             throw new RuntimeException(e);
         }
-        return null;
     }
 
     private ChessGame convertJsonToGame(String jsonGame) {
@@ -74,78 +75,79 @@ public class SqlGameDAO extends SqlDAO implements GameDAO {
     }
 
     public GameData updateGamePlayer(int gameID, ChessGame.TeamColor playerColor, String username) {
-        Connection conn;
-        try {
-            conn = DatabaseManager.getConnection();
-        } catch (DataAccessException e) {
+        try (Connection conn = DatabaseManager.getConnection()){
+            GameData oldGameData = getGameData(gameID);
+            if (oldGameData == null) {
+                return null;
+            }
+            String oldWhiteUsername = oldGameData.whiteUsername();
+            if (oldWhiteUsername == null) {
+                oldWhiteUsername = "";
+            }
+            String oldBlackUsername = oldGameData.blackUsername();
+            if (oldBlackUsername == null) {
+                oldBlackUsername = "";
+            }
+
+            var statement = "UPDATE game SET whiteUsername = ?, blackUsername = ? WHERE gameID = ?";
+            try (var preparedStatement = conn.prepareStatement(statement)) {
+                preparedStatement.setInt(3, gameID);
+                if (playerColor.equals(ChessGame.TeamColor.WHITE)) {
+                    preparedStatement.setString(1, username);
+                    preparedStatement.setString(2, oldBlackUsername);
+                }
+                else {
+                    preparedStatement.setString(1, oldWhiteUsername);
+                    preparedStatement.setString(2, username);
+                }
+                preparedStatement.executeUpdate();
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+            return getGameData(gameID);
+        } catch (DataAccessException | SQLException e) {
             throw new RuntimeException(e);
         }
-
-        GameData oldGameData = getGameData(gameID);
-        if (oldGameData == null) {
-            return null;
-        }
-        String oldWhiteUsername = oldGameData.whiteUsername();
-        if (oldWhiteUsername == null) {
-            oldWhiteUsername = "";
-        }
-        String oldBlackUsername = oldGameData.blackUsername();
-        if (oldBlackUsername == null) {
-            oldBlackUsername = "";
-        }
-
-        var statement = "UPDATE game SET whiteUsername = ?, blackUsername = ? WHERE gameID = ?";
-        try (var preparedStatement = conn.prepareStatement(statement)) {
-            preparedStatement.setInt(3, gameID);
-            if (playerColor.equals(ChessGame.TeamColor.WHITE)) {
-                preparedStatement.setString(1, username);
-                preparedStatement.setString(2, oldBlackUsername);
-            }
-            else {
-                preparedStatement.setString(1, oldWhiteUsername);
-                preparedStatement.setString(2, username);
-            }
-            preparedStatement.executeUpdate();
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-        return getGameData(gameID);
     }
 
     public ArrayList<GameData> getAllGameData() {
-        Connection conn;
-        try {
-            conn = DatabaseManager.getConnection();
-        } catch (DataAccessException e) {
-            throw new RuntimeException(e);
-        }
-
-        ArrayList<GameData> allGameData = new ArrayList<>();
-        var statement = "SELECT gameID, whiteUsername, blackUsername, gameName, game FROM game ";
-        try (var preparedStatement = conn.prepareStatement(statement)) {
-            try (var results = preparedStatement.executeQuery()) {
-                while (results.next()) {
-                    int dbGameID = results.getInt("gameID");
-                    String dbWhiteUsername = results.getString("whiteUsername");
-                    String dbBlackUsername = results.getString("blackUsername");
-                    String dbGameName = results.getString("gameName");
-                    String dbJsonGame = results.getString("game");
-                    ChessGame dbGame = convertJsonToGame(dbJsonGame);
-                    allGameData.add(new GameData(dbGameID, dbWhiteUsername, dbBlackUsername, dbGameName, dbGame));
+        try (Connection conn = DatabaseManager.getConnection()) {
+            ArrayList<GameData> allGameData = new ArrayList<>();
+            var statement = "SELECT gameID, whiteUsername, blackUsername, gameName, game FROM game ";
+            try (var preparedStatement = conn.prepareStatement(statement)) {
+                try (var results = preparedStatement.executeQuery()) {
+                    while (results.next()) {
+                        int dbGameID = results.getInt("gameID");
+                        String dbWhiteUsername = results.getString("whiteUsername");
+                        String dbBlackUsername = results.getString("blackUsername");
+                        String dbGameName = results.getString("gameName");
+                        String dbJsonGame = results.getString("game");
+                        ChessGame dbGame = convertJsonToGame(dbJsonGame);
+                        if (dbWhiteUsername == null || dbWhiteUsername.isEmpty()) {
+                            dbWhiteUsername = null;
+                        }
+                        if (dbBlackUsername == null || dbBlackUsername.isEmpty()) {
+                            dbBlackUsername = null;
+                        }
+                        allGameData.add(new GameData(dbGameID, dbWhiteUsername, dbBlackUsername, dbGameName, dbGame));
+                    }
                 }
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
             }
-        } catch (SQLException e) {
+            return allGameData;
+        } catch (DataAccessException | SQLException e) {
             throw new RuntimeException(e);
         }
-        return allGameData;
     }
 
     public void deleteAllGameData() throws DataAccessException, SQLException {
-        Connection conn = DatabaseManager.getConnection();
-        var statement = "TRUNCATE TABLE game";
-        try (var preparedStatement = conn.prepareStatement(statement)) {
-            preparedStatement.executeUpdate();
+        try (Connection conn = DatabaseManager.getConnection()) {
+            var statement = "TRUNCATE TABLE game";
+            try (var preparedStatement = conn.prepareStatement(statement)) {
+                preparedStatement.executeUpdate();
+            }
+            gameCounter = 0;
         }
-        gameCounter = 0;
     }
 }

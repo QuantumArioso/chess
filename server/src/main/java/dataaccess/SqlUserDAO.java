@@ -15,30 +15,27 @@ public class SqlUserDAO extends SqlDAO implements UserDAO {
 
     @Override
     public UserData getUser(String username, String password) {
-        Connection conn;
-        try {
-            conn = DatabaseManager.getConnection();
-        } catch (DataAccessException e) {
-            throw new RuntimeException(e);
-        }
-
-        var statement = "SELECT username, password, email FROM user WHERE username=? ";
-        try (var preparedStatement = conn.prepareStatement(statement)) {
-            preparedStatement.setString(1, username);
-            try (var results = preparedStatement.executeQuery()) {
-                while (results.next()) {
-                    var dbHashedPassword = results.getString("password");
-                    var dbEmail = results.getString("email");
-                    if (verifyUser(dbHashedPassword, password)) {
-                        return new UserData(username, password, dbEmail);
+        try (Connection conn = DatabaseManager.getConnection()){
+            var statement = "SELECT username, password, email FROM user WHERE username=? ";
+            try (var preparedStatement = conn.prepareStatement(statement)) {
+                preparedStatement.setString(1, username);
+                try (var results = preparedStatement.executeQuery()) {
+                    while (results.next()) {
+                        var dbHashedPassword = results.getString("password");
+                        var dbEmail = results.getString("email");
+                        if (verifyUser(dbHashedPassword, password)) {
+                            return new UserData(username, password, dbEmail);
+                        }
                     }
                 }
             }
-        }
-        catch (SQLException e) {
+            catch (SQLException e) {
+                return null;
+            }
             return null;
+        } catch (DataAccessException | SQLException e) {
+            throw new RuntimeException(e);
         }
-        return null;
     }
 
     @Override
@@ -46,17 +43,17 @@ public class SqlUserDAO extends SqlDAO implements UserDAO {
         String username = userData.username();
         String hashedPassword = hashUserPassword(userData.password());
         String email = userData.email();
-        Connection conn = DatabaseManager.getConnection();
-
-        if (username.matches("[a-zA-Z]+")) {
-            var statement = "INSERT INTO user (username, password, email) VALUES(?, ?, ?)";
-            try (var preparedStatement = conn.prepareStatement(statement)) {
-                preparedStatement.setString(1, username);
-                preparedStatement.setString(2, hashedPassword);
-                preparedStatement.setString(3, email);
-                preparedStatement.executeUpdate();
-            } catch (SQLIntegrityConstraintViolationException e) {
-                throw new UnavailableException();
+        try (Connection conn = DatabaseManager.getConnection()) {
+            if (username.matches("[a-zA-Z]+")) {
+                var statement = "INSERT INTO user (username, password, email) VALUES(?, ?, ?)";
+                try (var preparedStatement = conn.prepareStatement(statement)) {
+                    preparedStatement.setString(1, username);
+                    preparedStatement.setString(2, hashedPassword);
+                    preparedStatement.setString(3, email);
+                    preparedStatement.executeUpdate();
+                } catch (SQLIntegrityConstraintViolationException e) {
+                    throw new UnavailableException();
+                }
             }
         }
     }
@@ -71,10 +68,11 @@ public class SqlUserDAO extends SqlDAO implements UserDAO {
 
     @Override
     public void deleteAllUserData() throws DataAccessException, SQLException {
-        Connection conn = DatabaseManager.getConnection();
-        var statement = "TRUNCATE TABLE user";
-        try (var preparedStatement = conn.prepareStatement(statement)) {
-            preparedStatement.executeUpdate();
+        try (Connection conn = DatabaseManager.getConnection()) {
+            var statement = "TRUNCATE TABLE user";
+            try (var preparedStatement = conn.prepareStatement(statement)) {
+                preparedStatement.executeUpdate();
+            }
         }
     }
 }

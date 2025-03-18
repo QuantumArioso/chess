@@ -1,5 +1,7 @@
 package ui;
 
+import chess.ChessBoard;
+
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 
@@ -8,25 +10,25 @@ import static ui.EscapeSequences.*;
 public class DrawChessBoard {
     private static final int BOARD_WIDTH = 8;
 
-    public static void main(String[] args) {
+    public static void drawBoard(ChessBoard chessBoard) {
         var out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
 
-        drawBoard(out);
-    }
+        String letters = "   a  b  c  d  e  f  g  h   ";
+        if (needToFlip) {
+            letters = "   h  g  f  e  d  c  b  a   ";
+        }
 
-    private static void drawBoard(PrintStream out) {
-        drawLetterText(out);
+        drawText(out, letters);
         for (int col = 1; col <= BOARD_WIDTH; col++) {
             out.print(9 - col + " ");
             drawRowOfSquares(out, col % 2 == 0, col);
             out.println(" " + (9 - col));
         }
-        drawLetterText(out);
+        drawText(out, letters);
     }
 
-    private static void drawLetterText(PrintStream out) {
-        String letters = "   a  b  c  d  e  f  g  h   ";
-        out.println(letters);
+    private static void drawText(PrintStream out, String text) {
+        out.println(text);
     }
 
     private static void drawRowOfSquares(PrintStream out, boolean lighterFirst, int col) {
