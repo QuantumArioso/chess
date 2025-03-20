@@ -10,6 +10,6 @@ public class Client {
         ChessGame game =  new ChessGame();
         ChessBoard board = game.getBoard();
         board.resetBoard();
-        DrawChessBoard.drawBoard(board, game.getTeamTurn() == ChessGame.TeamColor.BLACK);
+        DrawChessBoard.drawBoard(board, game.getTeamTurn() == ChessGame.TeamColor.WHITE);
     }
 }

@@ -8,6 +8,7 @@ import chess.ChessPosition;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 
+import static java.lang.Math.abs;
 import static ui.EscapeSequences.*;
 
 public class DrawChessBoard {
@@ -15,19 +16,21 @@ public class DrawChessBoard {
 
     public static void drawBoard(ChessBoard board, boolean needToFlip) {
         var out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
+        int flipInt = 0;
 
-        String letters = "   a  b  c  d  e  f  g  h   ";
+        String letters = "   h  g  f  e  d  c  b  a   ";
         boolean lighterFirst = true;
         if (needToFlip) {
-            letters = "   h  g  f  e  d  c  b  a   ";
+            letters = "   a  b  c  d  e  f  g  h   ";
             lighterFirst = false;
+            flipInt = 9;
         }
 
         drawText(out, letters);
         for (int row = 1; row <= BOARD_WIDTH; row++) {
-            out.print(9 - row + " ");
-            drawRowOfSquares(out, board, lighterFirst, row);
-            out.println(" " + (9 - row));
+            out.print(9 - abs(9 - flipInt - row) + " ");
+            drawRowOfSquares(out, board, lighterFirst, abs(flipInt - row));
+            out.println(" " + (9 - abs(9 - flipInt - row)));
             lighterFirst = !lighterFirst;
         }
         drawText(out, letters);
