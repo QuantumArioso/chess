@@ -1,6 +1,9 @@
 package ui;
 
 import chess.ChessBoard;
+import chess.ChessGame;
+import chess.ChessPiece;
+import chess.ChessPosition;
 
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
@@ -10,19 +13,22 @@ import static ui.EscapeSequences.*;
 public class DrawChessBoard {
     private static final int BOARD_WIDTH = 8;
 
-    public static void drawBoard(ChessBoard chessBoard) {
+    public static void drawBoard(ChessBoard board, boolean needToFlip) {
         var out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
 
         String letters = "   a  b  c  d  e  f  g  h   ";
+        boolean lighterFirst = true;
         if (needToFlip) {
             letters = "   h  g  f  e  d  c  b  a   ";
+            lighterFirst = false;
         }
 
         drawText(out, letters);
-        for (int col = 1; col <= BOARD_WIDTH; col++) {
-            out.print(9 - col + " ");
-            drawRowOfSquares(out, col % 2 == 0, col);
-            out.println(" " + (9 - col));
+        for (int row = 1; row <= BOARD_WIDTH; row++) {
+            out.print(9 - row + " ");
+            drawRowOfSquares(out, board, lighterFirst, row);
+            out.println(" " + (9 - row));
+            lighterFirst = !lighterFirst;
         }
         drawText(out, letters);
     }
@@ -31,62 +37,62 @@ public class DrawChessBoard {
         out.println(text);
     }
 
-    private static void drawRowOfSquares(PrintStream out, boolean lighterFirst, int col) {
+    private static void drawRowOfSquares(PrintStream out, ChessBoard board, boolean lighterFirst, int row) {
         if (lighterFirst) {
-            for (int row = 1; row <= BOARD_WIDTH; row++) {
-                if (row % 2 == 0) {
+            for (int col = 1; col <= BOARD_WIDTH; col++) {
+                if (col % 2 != 0) {
                     setBlue(out);
                 } else {
                     setMagenta(out);
                 }
-                printPlayer(out, mapPiece(out, col, row));
+                printPlayer(out, mapPiece(out, board, new ChessPosition(row, col)));
             }
         } else {
-            for (int row = 1; row <= BOARD_WIDTH; row++) {
-                if (row % 2 == 0) {
+            for (int col = 1; col <= BOARD_WIDTH; col++) {
+                if (col % 2 != 0) {
                     setMagenta(out);
                 } else {
                     setBlue(out);
                 }
-                printPlayer(out, mapPiece(out, col, row));
+                printPlayer(out, mapPiece(out, board, new ChessPosition(row, col)));
             }
         }
         resetColor(out);
     }
 
-    private static String mapPiece(PrintStream out, int row, int col) {
-        if (row != 1 && row != 2 && row != 7 && row != 8) {
-            return EMPTY;
-        }
-
-        if (row == 1 || row == 2) {
-            out.print(SET_TEXT_COLOR_BLACK);
-
-            if (row == 2) {
-                return BLACK_PAWN;
+    private static String mapPiece(PrintStream out, ChessBoard board, ChessPosition pos) {
+        if (!board.isEmpty(pos)) {
+            ChessGame.TeamColor color = board.getPiece(pos).getTeamColor();
+            if (color.equals(ChessGame.TeamColor.WHITE)) {
+                out.print(SET_TEXT_COLOR_WHITE);
             } else {
-                return getString(col, BLACK_ROOK, BLACK_KNIGHT, BLACK_BISHOP, BLACK_QUEEN, BLACK_KING);
+                out.print(SET_TEXT_COLOR_BLACK);
             }
-        } else {
-            out.print(SET_TEXT_COLOR_WHITE);
-
-            if (row == 7) {
-                return WHITE_PAWN;
-            } else return getString(col, WHITE_ROOK, WHITE_KNIGHT, WHITE_BISHOP, WHITE_QUEEN, WHITE_KING);
+            ChessPiece.PieceType piece = board.getPiece(pos).getPieceType();
+            return getPieceString(color, piece);
         }
+        return EMPTY;
     }
 
-    private static String getString(int col, String rook, String knight, String bishop, String queen, String king) {
-        if (col == 1 || col == 8) {
-            return rook;
-        } else if (col == 2 || col == 7) {
-            return knight;
-        } else if (col == 3 || col == 6) {
-            return bishop;
-        } else if (col == 4) {
-            return queen;
+    private static String getPieceString(ChessGame.TeamColor color, ChessPiece.PieceType piece) {
+        if (color.equals(ChessGame.TeamColor.WHITE)) {
+            return switch (piece) {
+                case PAWN -> WHITE_PAWN;
+                case BISHOP -> WHITE_BISHOP;
+                case KNIGHT -> WHITE_KNIGHT;
+                case ROOK -> WHITE_ROOK;
+                case QUEEN -> WHITE_QUEEN;
+                default -> WHITE_KING;
+            };
         } else {
-            return king;
+            return switch (piece) {
+                case PAWN -> BLACK_PAWN;
+                case BISHOP -> BLACK_BISHOP;
+                case KNIGHT -> BLACK_KNIGHT;
+                case ROOK -> BLACK_ROOK;
+                case QUEEN -> BLACK_QUEEN;
+                default -> BLACK_KING;
+            };
         }
     }
 
