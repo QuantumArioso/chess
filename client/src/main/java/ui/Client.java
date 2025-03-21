@@ -31,22 +31,48 @@ public class Client {
                         loggedIn = login(out, scanner);
                         break;
                     case 4:
-                        System.exit(0);
+                        exit(out);
                     default:
                         out.println("Please enter a number between 1 and 4");
-                        break;
                 }
                 out.println();
             }
-            out.println("made it here");
-//            while (loggedIn) {
-//                loggedIn = postLoginLoop(out, scanner);
-//            }
+            out.println("""
+                Your papers seem to be in order!
+                """);
+            out.println();
+            while (loggedIn) {
+                int choice = postLoginHelpMessage(out, scanner);
+                switch (choice) {
+                    case 1:
+                        continue;
+                    case 2:
+                        loggedIn = logout(out);
+                        break;
+                    case 3:
+                        createGame(out, scanner);
+                        break;
+                    case 4:
+                        listGames(out);
+                        break;
+                    case 5:
+                        joinGame(out, scanner);
+                        break;
+                    case 6:
+                        observeGame(out, scanner);
+                        break;
+                    case 7:
+                        exit(out);
+                    default:
+                        out.println("Please enter a number between 1 and 7");
+                }
+            }
+            out.println();
         }
     }
 
     private static int preLoginHelpMessage(PrintStream out, Scanner scanner) {
-        out.print("""
+        out.println("""
                 Enter the number next to the option you wish to select:
                 1. Help
                 2. Register new combatant
@@ -64,7 +90,7 @@ public class Client {
     }
 
     private static void register(PrintStream out, Scanner scanner) {
-        out.print("""
+        out.println("""
                 Hail, new combatant! Please enter registration information in this format:
                     username password email
                 """);
@@ -73,7 +99,7 @@ public class Client {
     }
 
     private static boolean login(PrintStream out, Scanner scanner) {
-        out.print("""
+        out.println("""
                 I am overjoyed to see you again! First, let me make sure your papers are in order.
                 Please enter login information in this format:
                     username password
@@ -81,6 +107,72 @@ public class Client {
         String input = scanner.nextLine();
         out.println(input + ": need to implement this API");
         return true;
+    }
+
+    private static void exit(PrintStream out) {
+        out.println("I bid thee farewell. Safe travels!");
+        System.exit(0);
+    }
+
+    private static int postLoginHelpMessage(PrintStream out, Scanner scanner) {
+        out.println("""
+                Enter the number next to the option you wish to select:
+                1. Help
+                2. Logout
+                3. Create a new chess game
+                4. List all chess games
+                5. Play a chess game
+                6. Observe a chess game
+                7. Exit
+                """);
+        int choice = 0;
+        try {
+            choice = scanner.nextInt();
+            assert 1 <= choice && choice <= 7;
+        } catch (Exception e) {
+            out.println("Please enter a number between 1 and 7");
+        }
+        return choice;
+    }
+    private static boolean logout(PrintStream out) {
+        out.println("""
+                Are you really leaving so soon?
+                """);
+        out.println("need to implement this API");
+        return false;
+    }
+
+    private static void createGame(PrintStream out, Scanner scanner) {
+        out.println("""
+                Create a new game of chess! Please enter a game name:
+                """);
+        String input = scanner.nextLine();
+        out.println(input + ": need to implement this API");
+    }
+
+    private static void listGames(PrintStream out) {
+        out.println("""
+                These are all the existing games
+                """);
+        out.println("need to implement this API");
+    }
+
+    private static void joinGame(PrintStream out, Scanner scanner) {
+        out.println("""
+                Enter the game number you wish to join, as well as which team you want to join as (white or black).
+                Please enter information in this format:
+                    number team
+                """);
+        String input = scanner.nextLine();
+        out.println(input + ": need to implement this API");
+    }
+
+    private static void observeGame(PrintStream out, Scanner scanner) {
+        out.println("""
+                Enter the game number you wish to observe:
+                """);
+        String input = scanner.nextLine();
+        out.println(input + ": need to implement this API");
     }
 
     private static void callDrawChessBoard() {
