@@ -18,12 +18,13 @@ public class ServerFacade {
 
         String data = """
                 {
-                    "username": "ab",
+                    "username": "ag",
                     "password": "abomination8",
                     "email": "amityblight@gmail.com"
                 }
                 """;
-        ClientCommunicator.doPost("http://localhost:8080/user", data);
+        String result = ClientCommunicator.doPost("http://localhost:8080/user", data);
+        System.out.println(result);
 
 
         // Specify the desired endpoint

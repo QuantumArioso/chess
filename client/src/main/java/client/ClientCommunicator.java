@@ -14,7 +14,7 @@ public class ClientCommunicator {
     // where the get and post code goes
     // the thing that actually knows about HTTP
 
-    public static void doPost(String urlString, String data) throws IOException {
+    public static String doPost(String urlString, String data) throws IOException {
         URL url = new URL(urlString);
 
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -44,10 +44,10 @@ public class ClientCommunicator {
             //connection.getHeaderField("Content-Length");
 
             InputStream responseBody = connection.getInputStream();
-            System.out.println(responseBody);
             InputStreamReader reader = new InputStreamReader(responseBody);
             Map body = new Gson().fromJson(reader, Map.class);
-            System.out.println(body.get("authToken"));
+            String jsonBody = new Gson().toJson(body);
+            return jsonBody;
             // Read response body from InputStream ...
         }
         else {
@@ -57,6 +57,7 @@ public class ClientCommunicator {
             System.out.println(responseBody);
             // Read and process error response body from InputStream ...
         }
+        return "";
     }
 
     public static void doGet(String urlString, String authToken) throws IOException {
