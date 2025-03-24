@@ -16,12 +16,20 @@ public class Client {
     // depends on DrawChessBoard
     // depends on ServerFacade
     public static void main(String args[]) {
+
+
         try {
             ServerFacade.register("raine", "viola", "rainestorm@gmail.com");
         } catch (BadRequestException | IOException e) {
             System.out.println("Please enter a username that only contains letters or numbers");
         } catch (UnavailableException e) {
             System.out.println("There is already a user with that name. Please choose a different name");
+        }
+
+        try {
+            ServerFacade.clear();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
 
 

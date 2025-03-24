@@ -68,6 +68,19 @@ public class ClientCommunicator {
         return "";
     }
 
+    public static void doDelete(String urlString) throws IOException {
+        URL url = new URL(urlString);
+
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+
+        connection.setReadTimeout(5000);
+        connection.setRequestMethod("DELETE");
+
+        connection.connect();
+
+        connection.getResponseCode();
+    }
+
     public static void doGet(String urlString, String authToken) throws IOException {
         System.out.println("in doGet");
         URL url = new URL(urlString);
