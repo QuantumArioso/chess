@@ -26,7 +26,7 @@ public class Server {
 
         Spark.get("/game", this::listGamesBody); //list games
 
-        Spark.put("game", this::joinGameBody); //join game
+        Spark.put("/game", this::joinGameBody); //join game
 
         Spark.delete("/session", this::logoutBody); //logout
         Spark.delete("/db", this::clearBody); //clear
