@@ -54,6 +54,8 @@ public class SqlUserDAO extends SqlDAO implements UserDAO {
                 } catch (SQLIntegrityConstraintViolationException e) {
                     throw new UnavailableException();
                 }
+            } else {
+                throw new BadRequestException();
             }
         }
     }

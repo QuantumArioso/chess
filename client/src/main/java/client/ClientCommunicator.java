@@ -1,6 +1,8 @@
 package client;
 
 import com.google.gson.Gson;
+import exceptions.BadRequestException;
+import exceptions.UnavailableException;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -34,7 +36,7 @@ public class ClientCommunicator {
             requestBody.write(data.getBytes());
         }
 
-        System.out.println(connection.getResponseCode());
+        int responseCode = connection.getResponseCode();
         if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
             // Get HTTP response headers, if necessary
             // Map<String, List<String>> headers = connection.getHeaderFields();
@@ -55,6 +57,12 @@ public class ClientCommunicator {
 
             InputStream responseBody = connection.getErrorStream();
             System.out.println(responseBody);
+
+            if (responseCode == 400) {
+                throw new BadRequestException();
+            } else if (responseCode == 403) {
+                throw new UnavailableException();
+            }
             // Read and process error response body from InputStream ...
         }
         return "";
