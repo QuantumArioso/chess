@@ -2,6 +2,7 @@ package client;
 
 import com.google.gson.Gson;
 import exceptions.BadRequestException;
+import exceptions.UnauthorizedException;
 import exceptions.UnavailableException;
 
 import java.io.IOException;
@@ -60,7 +61,10 @@ public class ClientCommunicator {
 
             if (responseCode == 400) {
                 throw new BadRequestException();
-            } else if (responseCode == 403) {
+            } else if (responseCode == 401) {
+                throw new UnauthorizedException();
+            }
+            else if (responseCode == 403) {
                 throw new UnavailableException();
             }
             // Read and process error response body from InputStream ...

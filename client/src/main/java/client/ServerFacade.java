@@ -14,8 +14,14 @@ import java.util.Map;
 public class ServerFacade {
     // has 7 methods--one for each request
     // depends on ClientCommunicator for get and post
+    int port;
+    String url;
+    public ServerFacade(int port) {
+        this.port = port;
+        url = String.format("http://localhost:%d", port);
+    }
 
-    public static String register(String username, String password, String email) throws IOException {
+    public String register(String username, String password, String email) throws IOException {
         String data = String.format("""
             {
                 "username": %s,
@@ -23,12 +29,24 @@ public class ServerFacade {
                 "email": %s
             }
             """, username, password, email);
-        String result = ClientCommunicator.doPost("http://localhost:8080/user", data);
+        String result = ClientCommunicator.doPost(url + "/user", data);
         Map body = new Gson().fromJson(result, Map.class);
         return (String) body.get("authToken");
     }
 
-    public static void clear() throws IOException {
-        ClientCommunicator.doDelete("http://localhost:8080/db");
+    public String login(String username, String password) throws IOException {
+        String data = String.format("""
+            {
+                "username": %s,
+                "password": %s,
+            }
+            """, username, password);
+        String result = ClientCommunicator.doPost(url + "/session", data);
+        Map body = new Gson().fromJson(result, Map.class);
+        return (String) body.get("authToken");
+    }
+
+    public void clear() throws IOException {
+        ClientCommunicator.doDelete(url + "/db");
     }
 }

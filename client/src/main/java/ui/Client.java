@@ -16,81 +16,80 @@ public class Client {
     // depends on DrawChessBoard
     // depends on ServerFacade
     public static void main(String args[]) {
-
-
-        try {
-            ServerFacade.register("raine", "viola", "rainestorm@gmail.com");
-        } catch (BadRequestException | IOException e) {
-            System.out.println("Please enter a username that only contains letters or numbers");
-        } catch (UnavailableException e) {
-            System.out.println("There is already a user with that name. Please choose a different name");
-        }
-
-        try {
-            ServerFacade.clear();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-
-//        PrintStream out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
-//        Scanner scanner = new Scanner(System.in);
-//        out.print("""
-//                Welcome to my kingdom! We are in the midst of a war and could use thy assistance.
-//                What do ye wish to do first?
-//                """);
-//        while (true) {
-//            boolean loggedIn = false;
-//            while (!loggedIn) {
-//                int choice = preLoginHelpMessage(out, scanner);
-//                switch (choice) {
-//                    case 1:
-//                        continue;
-//                    case 2:
-//                        register(out, scanner);
-//                        break;
-//                    case 3:
-//                        loggedIn = login(out, scanner);
-//                        break;
-//                    case 4:
-//                        exit(out);
-//                    default:
-//                        out.println("Please enter a number between 1 and 4");
-//                }
-//                out.println();
-//            }
-//            out.println("""
-//                Your papers seem to be in order!
-//                """);
-//            out.println();
-//            while (loggedIn) {
-//                int choice = postLoginHelpMessage(out, scanner);
-//                switch (choice) {
-//                    case 1:
-//                        continue;
-//                    case 2:
-//                        loggedIn = logout(out);
-//                        break;
-//                    case 3:
-//                        createGame(out, scanner);
-//                        break;
-//                    case 4:
-//                        listGames(out);
-//                        break;
-//                    case 5:
-//                        joinGame(out, scanner);
-//                        break;
-//                    case 6:
-//                        observeGame(out, scanner);
-//                        break;
-//                    case 7:
-//                        exit(out);
-//                    default:
-//                        out.println("Please enter a number between 1 and 7");
-//                }
-//            }
-//            out.println();
+        ServerFacade facade = new ServerFacade(8080);
+//        try {
+//            facade.register("raine", "viola", "rainestorm@gmail.com");
+//        } catch (BadRequestException | IOException e) {
+//            System.out.println("Please enter a username that only contains letters or numbers");
+//        } catch (UnavailableException e) {
+//            System.out.println("There is already a user with that name. Please choose a different name");
 //        }
+//
+//        try {
+//            facade.clear();
+//        } catch (IOException e) {
+//            throw new RuntimeException(e);
+//        }
+
+
+        PrintStream out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
+        Scanner scanner = new Scanner(System.in);
+        out.print("""
+                Welcome to my kingdom! We are in the midst of a war and could use thy assistance.
+                What do ye wish to do first?
+                """);
+        while (true) {
+            boolean loggedIn = false;
+            while (!loggedIn) {
+                int choice = preLoginHelpMessage(out, scanner);
+                switch (choice) {
+                    case 1:
+                        continue;
+                    case 2:
+                        register(out, scanner);
+                        break;
+                    case 3:
+                        loggedIn = login(out, scanner);
+                        break;
+                    case 4:
+                        exit(out);
+                    default:
+                        out.println("Please enter a number between 1 and 4");
+                }
+                out.println();
+            }
+            out.println("""
+                Your papers seem to be in order!
+                """);
+            out.println();
+            while (loggedIn) {
+                int choice = postLoginHelpMessage(out, scanner);
+                switch (choice) {
+                    case 1:
+                        continue;
+                    case 2:
+                        loggedIn = logout(out);
+                        break;
+                    case 3:
+                        createGame(out, scanner);
+                        break;
+                    case 4:
+                        listGames(out);
+                        break;
+                    case 5:
+                        joinGame(out, scanner);
+                        break;
+                    case 6:
+                        observeGame(out, scanner);
+                        break;
+                    case 7:
+                        exit(out);
+                    default:
+                        out.println("Please enter a number between 1 and 7");
+                }
+            }
+            out.println();
+        }
     }
 
     private static int preLoginHelpMessage(PrintStream out, Scanner scanner) {
