@@ -8,6 +8,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Map;
 
 
@@ -59,6 +60,12 @@ public class ServerFacade {
 
     public void logout(String authToken) throws IOException {
         ClientCommunicator.doDelete(url + "/session", authToken);
+    }
+
+    public ArrayList listGames(String authToken) throws IOException {
+        String result = ClientCommunicator.doGet(url + "/game", authToken);
+        Map body = new Gson().fromJson(result, Map.class);
+        return (ArrayList) body.get("games");
     }
 
     public void clear() throws IOException {

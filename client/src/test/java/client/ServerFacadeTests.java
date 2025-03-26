@@ -29,6 +29,7 @@ public class ServerFacadeTests {
     void setup() throws IOException {
         facade.clear();
         authToken = facade.register("raine", "888", "rainestorm@gmail.com");
+        facade.createGame(authToken, "the boiling isles");
     }
 
     @AfterAll
@@ -76,13 +77,27 @@ public class ServerFacadeTests {
     @Test
     @DisplayName("Create Game Success")
     public void createGamePositive() throws IOException {
-        assertEquals(1.0, facade.createGame(authToken, "new game"));
+        assertEquals(2.0, facade.createGame(authToken, "new game"));
     }
 
     @Test
     @DisplayName("Create Game Bad authToken")
     public void createGameNegative() {
         assertThrows(UnauthorizedException.class, () -> facade.createGame("bad authToken", "new game"));
+    }
+
+    @Test
+    @DisplayName("List Games Success")
+    public void listGamesPositive() throws IOException {
+        facade.createGame(authToken, "hexside");
+        facade.createGame(authToken, "the owl house");
+        assertEquals(3, facade.listGames(authToken).size());
+    }
+
+    @Test
+    @DisplayName("List Games Bad authToken")
+    public void listGamesNegative() {
+        assertThrows(UnauthorizedException.class, () -> facade.listGames("bad authToken"));
     }
 
     @Test

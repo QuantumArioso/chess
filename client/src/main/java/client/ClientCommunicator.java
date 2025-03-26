@@ -51,8 +51,7 @@ public class ClientCommunicator {
             InputStream responseBody = connection.getInputStream();
             InputStreamReader reader = new InputStreamReader(responseBody);
             Map body = new Gson().fromJson(reader, Map.class);
-            String jsonBody = new Gson().toJson(body);
-            return jsonBody;
+            return new Gson().toJson(body);
             // Read response body from InputStream ...
         }
         else {
@@ -94,7 +93,7 @@ public class ClientCommunicator {
         }
     }
 
-    public static void doGet(String urlString, String authToken) throws IOException {
+    public static String doGet(String urlString, String authToken) throws IOException {
         System.out.println("in doGet");
         URL url = new URL(urlString);
 
@@ -104,27 +103,21 @@ public class ClientCommunicator {
         connection.setRequestMethod("GET");
 
         // Set HTTP request headers, if necessary
-        // connection.addRequestProperty("Accept", "text/html");
-         connection.addRequestProperty("Authorization", authToken);
+         connection.addRequestProperty("authorization", authToken);
 
         connection.connect();
 
         if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
-            // Get HTTP response headers, if necessary
-            // Map<String, List<String>> headers = connection.getHeaderFields();
-
-            // OR
-
-            //connection.getHeaderField("Content-Length");
-
             InputStream responseBody = connection.getInputStream();
-            System.out.println("success: " + responseBody);
+            InputStreamReader reader = new InputStreamReader(responseBody);
+            Map body = new Gson().fromJson(reader, Map.class);
+            return new Gson().toJson(body);
         } else {
-            // SERVER RETURNED AN HTTP ERROR
-
-            InputStream responseBody = connection.getErrorStream();
-            System.out.println("error: " + responseBody);
-            // Read and process error response body from InputStream ...
+            int responseCode = connection.getResponseCode();
+            if (responseCode == 401) {
+                throw new UnauthorizedException();
+            }
         }
+        return "";
     }
 }
