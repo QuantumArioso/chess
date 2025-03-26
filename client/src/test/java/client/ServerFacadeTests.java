@@ -1,5 +1,7 @@
 package client;
 
+import exceptions.BadRequestException;
+import exceptions.UnauthorizedException;
 import exceptions.UnavailableException;
 import org.junit.jupiter.api.*;
 import server.Server;
@@ -42,11 +44,10 @@ public class ServerFacadeTests {
 
     @Test
     @DisplayName("Register User Already Exists")
-    public void createUserNegative() throws IOException {
+    public void createUserNegative() {
         assertThrows(UnavailableException.class, () -> facade.register("raine", "888", "rainestorm@gmail.com"));
     }
 
-    //TODO: Why is this giving me a 500? Also need a negative test
     @Test
     @DisplayName("Login Success")
     public void loginPositive() throws IOException {
@@ -54,9 +55,21 @@ public class ServerFacadeTests {
     }
 
     @Test
+    @DisplayName("Login Wrong Password")
+    public void loginNegative() {
+        assertThrows(UnauthorizedException.class, () -> facade.login("raine", "222"));
+    }
+
+    @Test
     @DisplayName("Create Game Success")
     public void createGamePositive() throws IOException {
         assertEquals(1.0, facade.createGame(authToken, "new game"));
+    }
+
+    @Test
+    @DisplayName("Create Game Bad authToken")
+    public void createGameNegative() {
+        assertThrows(UnauthorizedException.class, () -> facade.createGame("bad authToken", "new game"));
     }
 
     @Test
