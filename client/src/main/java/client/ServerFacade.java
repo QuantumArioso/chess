@@ -47,6 +47,10 @@ public class ServerFacade {
         return (String) body.get("authToken");
     }
 
+    public void logout(String authToken) throws IOException {
+        ClientCommunicator.doDelete(url + "/session", authToken);
+    }
+
     public double createGame(String authToken, String gameName) throws IOException {
         String data = String.format("""
             {
@@ -58,14 +62,20 @@ public class ServerFacade {
         return (double) body.get("gameID");
     }
 
-    public void logout(String authToken) throws IOException {
-        ClientCommunicator.doDelete(url + "/session", authToken);
-    }
-
     public ArrayList listGames(String authToken) throws IOException {
         String result = ClientCommunicator.doGet(url + "/game", authToken);
-        Map body = new Gson().fromJson(result, Map.class);
+        Map<String, Object> body = new Gson().fromJson(result, Map.class);
         return (ArrayList) body.get("games");
+    }
+
+    public void joinGame(String authToken, String playerColor, double gameID) throws IOException {
+        String data = String.format("""
+                {
+                    "playerColor": %s,
+                    "gameID": %f
+                }
+                """, playerColor, gameID);
+        ClientCommunicator.doPut(url + "/game", data, authToken);
     }
 
     public void clear() throws IOException {

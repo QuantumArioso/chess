@@ -7,6 +7,8 @@ import org.junit.jupiter.api.*;
 import server.Server;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -98,6 +100,21 @@ public class ServerFacadeTests {
     @DisplayName("List Games Bad authToken")
     public void listGamesNegative() {
         assertThrows(UnauthorizedException.class, () -> facade.listGames("bad authToken"));
+    }
+
+    @Test
+    @DisplayName("Join Game Success")
+    public void joinGamePositive() throws IOException {
+        facade.joinGame(authToken, "BLACK", 1.0);
+        ArrayList<Map> games = facade.listGames(authToken);
+        assertEquals(1, games.size());
+        assertEquals("raine", games.get(0).get("blackUsername"));
+    }
+
+    @Test
+    @DisplayName("Join Game Invalid authToken")
+    public void joinGameNegative() {
+        assertThrows(UnauthorizedException.class, () -> facade.joinGame("bad authToken", "WHITE", 1.0));
     }
 
     @Test

@@ -73,6 +73,62 @@ public class ClientCommunicator {
         return "";
     }
 
+    public static String doGet(String urlString, String authToken) throws IOException {
+        URL url = new URL(urlString);
+
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+
+        connection.setReadTimeout(5000);
+        connection.setRequestMethod("GET");
+
+        // Set HTTP request headers, if necessary
+        connection.addRequestProperty("authorization", authToken);
+
+        connection.connect();
+
+        if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
+            InputStream responseBody = connection.getInputStream();
+            InputStreamReader reader = new InputStreamReader(responseBody);
+            Map body = new Gson().fromJson(reader, Map.class);
+            return new Gson().toJson(body);
+        } else {
+            int responseCode = connection.getResponseCode();
+            if (responseCode == 401) {
+                throw new UnauthorizedException();
+            }
+        }
+        return "";
+    }
+
+    public static void doPut(String urlString, String data, String authToken) throws IOException {
+        URL url = new URL(urlString);
+
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+
+        connection.setReadTimeout(5000);
+        connection.setRequestMethod("PUT");
+        connection.setDoOutput(true);
+
+        // Set HTTP request headers, if necessary
+        connection.addRequestProperty("authorization", authToken);
+
+        connection.connect();
+
+        try (OutputStream requestBody = connection.getOutputStream();) {
+            requestBody.write(data.getBytes());
+        }
+
+        int responseCode = connection.getResponseCode();
+        if (responseCode == 400) {
+            throw new BadRequestException();
+        } else if (responseCode == 401) {
+            throw new UnauthorizedException();
+        }
+        else if (responseCode == 403) {
+            throw new UnavailableException();
+        }
+    }
+
     public static void doDelete(String urlString, String authToken) throws IOException {
         URL url = new URL(urlString);
 
@@ -91,33 +147,5 @@ public class ClientCommunicator {
         if (responseCode == 401) {
             throw new UnauthorizedException();
         }
-    }
-
-    public static String doGet(String urlString, String authToken) throws IOException {
-        System.out.println("in doGet");
-        URL url = new URL(urlString);
-
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-
-        connection.setReadTimeout(5000);
-        connection.setRequestMethod("GET");
-
-        // Set HTTP request headers, if necessary
-         connection.addRequestProperty("authorization", authToken);
-
-        connection.connect();
-
-        if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
-            InputStream responseBody = connection.getInputStream();
-            InputStreamReader reader = new InputStreamReader(responseBody);
-            Map body = new Gson().fromJson(reader, Map.class);
-            return new Gson().toJson(body);
-        } else {
-            int responseCode = connection.getResponseCode();
-            if (responseCode == 401) {
-                throw new UnauthorizedException();
-            }
-        }
-        return "";
     }
 }
