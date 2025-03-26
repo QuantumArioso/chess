@@ -103,6 +103,7 @@ public class Client {
         int choice = 0;
         try {
             choice = scanner.nextInt();
+            scanner.nextLine();
             assert 1 <= choice && choice <= 4;
         } catch (Exception e) {
             out.println("Please enter a number between 1 and 4");
@@ -149,6 +150,7 @@ public class Client {
         int choice = 0;
         try {
             choice = scanner.nextInt();
+            scanner.nextLine();
             assert 1 <= choice && choice <= 7;
         } catch (Exception e) {
             out.println("Please enter a number between 1 and 7");

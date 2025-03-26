@@ -17,7 +17,7 @@ public class ClientCommunicator {
     // where the get and post code goes
     // the thing that actually knows about HTTP
 
-    public static String doPost(String urlString, String data) throws IOException {
+    public static String doPost(String urlString, String data, String authToken) throws IOException {
         URL url = new URL(urlString);
 
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -27,7 +27,9 @@ public class ClientCommunicator {
         connection.setDoOutput(true);
 
         // Set HTTP request headers, if necessary
-        // connection.addRequestProperty("Accept", "text/html");
+        if (!authToken.isEmpty()) {
+            connection.addRequestProperty("authorization", authToken);
+        }
 
         connection.connect();
 

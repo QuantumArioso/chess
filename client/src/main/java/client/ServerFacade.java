@@ -29,7 +29,7 @@ public class ServerFacade {
                 "email": %s
             }
             """, username, password, email);
-        String result = ClientCommunicator.doPost(url + "/user", data);
+        String result = ClientCommunicator.doPost(url + "/user", data, "");
         Map body = new Gson().fromJson(result, Map.class);
         return (String) body.get("authToken");
     }
@@ -38,12 +38,23 @@ public class ServerFacade {
         String data = String.format("""
             {
                 "username": %s,
-                "password": %s,
+                "password": %s
             }
             """, username, password);
-        String result = ClientCommunicator.doPost(url + "/session", data);
+        String result = ClientCommunicator.doPost(url + "/session", data, "");
         Map body = new Gson().fromJson(result, Map.class);
         return (String) body.get("authToken");
+    }
+
+    public double createGame(String authToken, String gameName) throws IOException {
+        String data = String.format("""
+            {
+                "gameName": "%s"
+            }
+            """, gameName);
+        String result = ClientCommunicator.doPost(url + "/game", data, authToken);
+        Map body = new Gson().fromJson(result, Map.class);
+        return (double) body.get("gameID");
     }
 
     public void clear() throws IOException {

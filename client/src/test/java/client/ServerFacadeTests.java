@@ -13,6 +13,7 @@ public class ServerFacadeTests {
 
     private static Server server;
     static ServerFacade facade;
+    static String authToken;
 
     @BeforeAll
     public static void init() throws IOException {
@@ -25,7 +26,7 @@ public class ServerFacadeTests {
     @BeforeEach
     void setup() throws IOException {
         facade.clear();
-        facade.register("raine", "888", "rainestorm@gmail.com");
+        authToken = facade.register("raine", "888", "rainestorm@gmail.com");
     }
 
     @AfterAll
@@ -45,10 +46,17 @@ public class ServerFacadeTests {
         assertThrows(UnavailableException.class, () -> facade.register("raine", "888", "rainestorm@gmail.com"));
     }
 
+    //TODO: Why is this giving me a 500? Also need a negative test
     @Test
     @DisplayName("Login Success")
     public void loginPositive() throws IOException {
         assertEquals(36, facade.login("raine", "888").length());
+    }
+
+    @Test
+    @DisplayName("Create Game Success")
+    public void createGamePositive() throws IOException {
+        assertEquals(1.0, facade.createGame(authToken, "new game"));
     }
 
     @Test
