@@ -57,7 +57,11 @@ public class ServerFacade {
         return (double) body.get("gameID");
     }
 
+    public void logout(String authToken) throws IOException {
+        ClientCommunicator.doDelete(url + "/session", authToken);
+    }
+
     public void clear() throws IOException {
-        ClientCommunicator.doDelete(url + "/db");
+        ClientCommunicator.doDelete(url + "/db", "");
     }
 }

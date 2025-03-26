@@ -61,6 +61,19 @@ public class ServerFacadeTests {
     }
 
     @Test
+    @DisplayName("Logout Success")
+    public void logoutPositive() throws IOException {
+        facade.logout(authToken);
+        assertThrows(UnauthorizedException.class, () -> facade.createGame(authToken, "new game"));
+    }
+
+    @Test
+    @DisplayName("Logout Bad authToken")
+    public void logoutNegative() {
+        assertThrows(UnauthorizedException.class, () -> facade.logout("bad authToken"));
+    }
+
+    @Test
     @DisplayName("Create Game Success")
     public void createGamePositive() throws IOException {
         assertEquals(1.0, facade.createGame(authToken, "new game"));

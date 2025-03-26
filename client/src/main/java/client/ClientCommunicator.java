@@ -74,7 +74,7 @@ public class ClientCommunicator {
         return "";
     }
 
-    public static void doDelete(String urlString) throws IOException {
+    public static void doDelete(String urlString, String authToken) throws IOException {
         URL url = new URL(urlString);
 
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -82,9 +82,16 @@ public class ClientCommunicator {
         connection.setReadTimeout(5000);
         connection.setRequestMethod("DELETE");
 
+        if (!authToken.isEmpty()) {
+            connection.addRequestProperty("authorization", authToken);
+        }
+
         connection.connect();
 
-        connection.getResponseCode();
+        int responseCode = connection.getResponseCode();
+        if (responseCode == 401) {
+            throw new UnauthorizedException();
+        }
     }
 
     public static void doGet(String urlString, String authToken) throws IOException {
