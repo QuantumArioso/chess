@@ -5,33 +5,20 @@ import chess.ChessGame;
 import client.ClientCommunicator;
 import client.ServerFacade;
 import exceptions.BadRequestException;
+import exceptions.UnauthorizedException;
 import exceptions.UnavailableException;
 
 import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Map;
 import java.util.Scanner;
 
 public class Client {
-    // depends on DrawChessBoard
-    // depends on ServerFacade
+    static ServerFacade facade = new ServerFacade(8080);
+
     public static void main(String args[]) {
-        ServerFacade facade = new ServerFacade(8080);
-//        try {
-//            facade.register("raine", "viola", "rainestorm@gmail.com");
-//        } catch (BadRequestException | IOException e) {
-//            System.out.println("Please enter a username that only contains letters or numbers");
-//        } catch (UnavailableException e) {
-//            System.out.println("There is already a user with that name. Please choose a different name");
-//        }
-//
-//        try {
-//            facade.clear();
-//        } catch (IOException e) {
-//            throw new RuntimeException(e);
-//        }
-
-
         PrintStream out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
         Scanner scanner = new Scanner(System.in);
         out.print("""
@@ -39,8 +26,8 @@ public class Client {
                 What do ye wish to do first?
                 """);
         while (true) {
-            boolean loggedIn = false;
-            while (!loggedIn) {
+            String authToken = "";
+            while (authToken.isEmpty()) {
                 int choice = preLoginHelpMessage(out, scanner);
                 switch (choice) {
                     case 1:
@@ -49,7 +36,7 @@ public class Client {
                         register(out, scanner);
                         break;
                     case 3:
-                        loggedIn = login(out, scanner);
+                        authToken = login(out, scanner);
                         break;
                     case 4:
                         exit(out);
@@ -62,19 +49,19 @@ public class Client {
                 Your papers seem to be in order!
                 """);
             out.println();
-            while (loggedIn) {
+            while (!authToken.isEmpty()) {
                 int choice = postLoginHelpMessage(out, scanner);
                 switch (choice) {
                     case 1:
                         continue;
                     case 2:
-                        loggedIn = logout(out);
+                        authToken = logout(out, authToken);
                         break;
                     case 3:
-                        createGame(out, scanner);
+                        createGame(out, scanner, authToken);
                         break;
                     case 4:
-                        listGames(out);
+                        listGames(out, authToken);
                         break;
                     case 5:
                         joinGame(out, scanner);
@@ -116,19 +103,33 @@ public class Client {
                 Hail, new combatant! Please enter registration information in this format:
                     username password email
                 """);
-        String input = scanner.nextLine();
-        out.println(input + ": need to implement this API");
+        String[] input = scanner.nextLine().split(" ");
+        try {
+            facade.register(input[0], input[1], input[2]);
+            out.println("Successfully registered!");
+        } catch (BadRequestException | IOException e) {
+            out.println("Please enter a username that only contains letters or numbers");
+        } catch (UnavailableException e) {
+            out.println("There is already a user with that name. Please choose a different name");
+        }
     }
 
-    private static boolean login(PrintStream out, Scanner scanner) {
+    private static String login(PrintStream out, Scanner scanner) {
         out.println("""
                 I am overjoyed to see you again! First, let me make sure your papers are in order.
                 Please enter login information in this format:
                     username password
                 """);
-        String input = scanner.nextLine();
-        out.println(input + ": need to implement this API");
-        return true;
+        String[] input = scanner.nextLine().split(" ");
+        try {
+            return facade.login(input[0], input[1]);
+        } catch (UnauthorizedException e) {
+            out.println("Your information is incorrect. Please try again");
+            return "";
+        } catch (IOException e) {
+            out.println("That was not the correct input. Please try again");
+            return "";
+        }
     }
 
     private static void exit(PrintStream out) {
@@ -157,27 +158,58 @@ public class Client {
         }
         return choice;
     }
-    private static boolean logout(PrintStream out) {
+    private static String logout(PrintStream out, String authToken) {
         out.println("""
                 Are you really leaving so soon?
                 """);
-        out.println("need to implement this API");
-        return false;
+        try {
+            facade.logout(authToken);
+            return "";
+        } catch (IOException e) {
+            out.println("Something went wrong. Please try again");
+            return authToken;
+        }
     }
 
-    private static void createGame(PrintStream out, Scanner scanner) {
+    private static void createGame(PrintStream out, Scanner scanner, String authToken) {
         out.println("""
                 Create a new game of chess! Please enter a game name:
                 """);
-        String input = scanner.nextLine();
-        out.println(input + ": need to implement this API");
+        String input = scanner.nextLine().strip();
+        try {
+            double gameID = facade.createGame(authToken, input);
+            out.println("Game " + gameID + " has been created!");
+        } catch (IOException e) {
+            out.println("Something went wrong. Please try again");
+        }
     }
 
-    private static void listGames(PrintStream out) {
+    private static void listGames(PrintStream out, String authToken) {
         out.println("""
-                These are all the existing games
+                These are all the existing games:
                 """);
-        out.println("need to implement this API");
+        try {
+            ArrayList<Map> list = facade.listGames(authToken);
+            String output = "";
+            for (int i = 0; i < list.size(); i++) {
+                Map<String, Object> map = list.get(i);
+                Object gameID = map.get("gameID");
+                Object gameName = map.get("gameName");
+                Object blackUsername = map.get("blackUsername");
+                if (blackUsername == null) {
+                    blackUsername = "none";
+                }
+                Object whiteUsername = map.get("whiteUsername");
+                if (whiteUsername == null) {
+                    whiteUsername = "none";
+                }
+                output += "Game ID: " + gameID + ".  Game Name: " + gameName + ".  Black Player: " + blackUsername +
+                        ".  White Player: " + whiteUsername + ".\n";
+            }
+            out.println(output);
+        } catch (IOException e) {
+            out.println("Something went wrong. Please try again");
+        }
     }
 
     private static void joinGame(PrintStream out, Scanner scanner) {

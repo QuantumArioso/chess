@@ -26,7 +26,6 @@ public class ClientCommunicator {
         connection.setRequestMethod("POST");
         connection.setDoOutput(true);
 
-        // Set HTTP request headers, if necessary
         if (!authToken.isEmpty()) {
             connection.addRequestProperty("authorization", authToken);
         }
@@ -34,32 +33,17 @@ public class ClientCommunicator {
         connection.connect();
 
         try (OutputStream requestBody = connection.getOutputStream();) {
-            // Write request body to OutputStream ...
-//            var jsonBody = new Gson().toJson(data);
             requestBody.write(data.getBytes());
         }
 
         int responseCode = connection.getResponseCode();
         if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
-            // Get HTTP response headers, if necessary
-            // Map<String, List<String>> headers = connection.getHeaderFields();
-
-            // OR
-
-            //connection.getHeaderField("Content-Length");
-
             InputStream responseBody = connection.getInputStream();
             InputStreamReader reader = new InputStreamReader(responseBody);
             Map body = new Gson().fromJson(reader, Map.class);
             return new Gson().toJson(body);
-            // Read response body from InputStream ...
         }
         else {
-            // SERVER RETURNED AN HTTP ERROR
-
-            InputStream responseBody = connection.getErrorStream();
-            System.out.println(responseBody);
-
             if (responseCode == 400) {
                 throw new BadRequestException();
             } else if (responseCode == 401) {
@@ -68,7 +52,6 @@ public class ClientCommunicator {
             else if (responseCode == 403) {
                 throw new UnavailableException();
             }
-            // Read and process error response body from InputStream ...
         }
         return "";
     }
