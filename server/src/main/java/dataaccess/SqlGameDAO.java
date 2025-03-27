@@ -47,17 +47,11 @@ public class SqlGameDAO extends SqlDAO implements GameDAO {
                 preparedStatement.setInt(1, gameID);
                 try (var results = preparedStatement.executeQuery()) {
                     while (results.next()) {
-                        String dbWhiteUsername = results.getString("whiteUsername");
-                        String dbBlackUsername = results.getString("blackUsername");
+                        String dbWhiteUsername = getUsername(results.getString("whiteUsername"));
+                        String dbBlackUsername = getUsername(results.getString("blackUsername"));
                         String dbGameName = results.getString("gameName");
                         String dbJsonGame = results.getString("game");
                         ChessGame dbGame = convertJsonToGame(dbJsonGame);
-                        if (dbWhiteUsername == null || dbWhiteUsername.isEmpty()) {
-                            dbWhiteUsername = null;
-                        }
-                        if (dbBlackUsername == null || dbBlackUsername.isEmpty()) {
-                            dbBlackUsername = null;
-                        }
                         return new GameData(gameID, dbWhiteUsername, dbBlackUsername, dbGameName, dbGame);
                     }
                 }
@@ -68,6 +62,13 @@ public class SqlGameDAO extends SqlDAO implements GameDAO {
         } catch (DataAccessException | SQLException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private static String getUsername(String username) {
+        if (username == null || username.isEmpty()) {
+            return null;
+        }
+        return username;
     }
 
     private static ChessGame convertJsonToGame(String jsonGame) {
@@ -119,17 +120,11 @@ public class SqlGameDAO extends SqlDAO implements GameDAO {
                 try (var results = preparedStatement.executeQuery()) {
                     while (results.next()) {
                         int dbGameID = results.getInt("gameID");
-                        String dbWhiteUsername = results.getString("whiteUsername");
-                        String dbBlackUsername = results.getString("blackUsername");
+                        String dbWhiteUsername = getUsername(results.getString("whiteUsername"));
+                        String dbBlackUsername = getUsername(results.getString("blackUsername"));
                         String dbGameName = results.getString("gameName");
                         String dbJsonGame = results.getString("game");
                         ChessGame dbGame = convertJsonToGame(dbJsonGame);
-                        if (dbWhiteUsername == null || dbWhiteUsername.isEmpty()) {
-                            dbWhiteUsername = null;
-                        }
-                        if (dbBlackUsername == null || dbBlackUsername.isEmpty()) {
-                            dbBlackUsername = null;
-                        }
                         allGameData.add(new GameData(dbGameID, dbWhiteUsername, dbBlackUsername, dbGameName, dbGame));
                     }
                 }

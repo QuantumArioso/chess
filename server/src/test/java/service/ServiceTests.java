@@ -126,15 +126,7 @@ public class ServiceTests {
     @DisplayName("Game: Success Create Game")
     public void successCreateGame() throws DataAccessException {
         String authToken = userService.login(new LoginRequest("ari", "stars8")).authToken();
-        GameCreateResult result = gameService.createGame(new GameCreateRequest(authToken, "My Game"));
-
-//        boolean inDatabase = false;
-//        for (GameData data : MockedDB.allGameData) {
-//            if (data.gameName().equals("My Game")) {
-//                inDatabase = true;
-//                break;
-//            }
-//        }
+        gameService.createGame(new GameCreateRequest(authToken, "My Game"));
         assertNotNull(gameService.listGames(new GameListRequest(authToken)));
     }
 

@@ -16,26 +16,30 @@ public class SqlUserDAO extends SqlDAO implements UserDAO {
     @Override
     public UserData getUser(String username, String password) {
         try (Connection conn = DatabaseManager.getConnection()){
-            var statement = "SELECT username, password, email FROM user WHERE username=? ";
-            try (var preparedStatement = conn.prepareStatement(statement)) {
-                preparedStatement.setString(1, username);
-                try (var results = preparedStatement.executeQuery()) {
-                    while (results.next()) {
-                        var dbHashedPassword = results.getString("password");
-                        var dbEmail = results.getString("email");
-                        if (verifyUser(dbHashedPassword, password)) {
-                            return new UserData(username, password, dbEmail);
-                        }
-                    }
-                }
-            }
-            catch (SQLException e) {
-                return null;
-            }
-            return null;
+            return findUser(conn, username, password);
         } catch (DataAccessException | SQLException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private UserData findUser(Connection conn, String username, String password) {
+        var statement = "SELECT username, password, email FROM user WHERE username=? ";
+        try (var preparedStatement = conn.prepareStatement(statement)) {
+            preparedStatement.setString(1, username);
+            try (var results = preparedStatement.executeQuery()) {
+                while (results.next()) {
+                    var dbHashedPassword = results.getString("password");
+                    var dbEmail = results.getString("email");
+                    if (verifyUser(dbHashedPassword, password)) {
+                        return new UserData(username, password, dbEmail);
+                    }
+                }
+            }
+        }
+        catch (SQLException e) {
+            return null;
+        }
+        return null;
     }
 
     @Override

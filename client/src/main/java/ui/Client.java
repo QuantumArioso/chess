@@ -252,12 +252,7 @@ public class Client {
                 return;
             }
 
-            for (int i = 0; i < list.size(); i++) {
-                Map<String, Object> map = list.get(i);
-                Object gameID = map.get("gameID");
-                double gameDouble = (double) gameID;
-                gameIDs.add((int) gameDouble);
-            }
+            getGameIds(gameIDs, list);
             if (!gameIDs.contains(Integer.parseInt(input[0]))) {
                 out.printf("Please enter a number between 1 and %d to join a game, or create a new game " +
                         "for more options.\n", gameIDs.size());
@@ -270,6 +265,15 @@ public class Client {
             out.println("That color is already taken. Please try the other color or join as an observer.");
         } catch (IOException e) {
             out.println("Something went wrong. Please try again");
+        }
+    }
+
+    private static void getGameIds(ArrayList<Integer> gameIDs, ArrayList<Map> list) {
+        for (int i = 0; i < list.size(); i++) {
+            Map<String, Object> map = list.get(i);
+            Object gameID = map.get("gameID");
+            double gameDouble = (double) gameID;
+            gameIDs.add((int) gameDouble);
         }
     }
 
@@ -293,12 +297,7 @@ public class Client {
                 return;
             }
             ArrayList<Integer> gameIDs = new ArrayList<>();
-            for (int i = 0; i < list.size(); i++) {
-                Map<String, Object> map = list.get(i);
-                Object gameID = map.get("gameID");
-                double gameDouble = (double) gameID;
-                gameIDs.add((int) gameDouble);
-            }
+            getGameIds(gameIDs, list);
             if (!gameIDs.contains(Integer.parseInt(input))) {
                 out.printf("Please enter a number between 1 and %d to observe a game.\n", gameIDs.size());
                 return;
