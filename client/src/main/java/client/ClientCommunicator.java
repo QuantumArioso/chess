@@ -38,10 +38,7 @@ public class ClientCommunicator {
 
         int responseCode = connection.getResponseCode();
         if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
-            InputStream responseBody = connection.getInputStream();
-            InputStreamReader reader = new InputStreamReader(responseBody);
-            Map body = new Gson().fromJson(reader, Map.class);
-            return new Gson().toJson(body);
+            return convertToJson(connection.getInputStream());
         }
         else {
             if (responseCode == 400) {
@@ -54,6 +51,12 @@ public class ClientCommunicator {
             }
         }
         return "";
+    }
+
+    private static String convertToJson(InputStream responseBody) {
+        InputStreamReader reader = new InputStreamReader(responseBody);
+        Map body = new Gson().fromJson(reader, Map.class);
+        return new Gson().toJson(body);
     }
 
     public static String doGet(String urlString, String authToken) throws IOException {
@@ -70,10 +73,7 @@ public class ClientCommunicator {
         connection.connect();
 
         if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
-            InputStream responseBody = connection.getInputStream();
-            InputStreamReader reader = new InputStreamReader(responseBody);
-            Map body = new Gson().fromJson(reader, Map.class);
-            return new Gson().toJson(body);
+            return convertToJson(connection.getInputStream());
         } else {
             int responseCode = connection.getResponseCode();
             if (responseCode == 401) {
