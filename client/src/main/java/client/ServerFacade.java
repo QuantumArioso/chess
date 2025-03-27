@@ -68,7 +68,7 @@ public class ServerFacade {
         return (ArrayList) body.get("games");
     }
 
-    public void joinGame(String authToken, String playerColor, double gameID) throws IOException {
+    public void joinGame(String authToken, double gameID, String playerColor) throws IOException {
         String data = String.format("""
                 {
                     "playerColor": %s,

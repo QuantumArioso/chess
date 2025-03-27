@@ -64,7 +64,7 @@ public class Client {
                         listGames(out, authToken);
                         break;
                     case 5:
-                        joinGame(out, scanner);
+                        joinGame(out, scanner, authToken);
                         break;
                     case 6:
                         observeGame(out, scanner);
@@ -89,8 +89,7 @@ public class Client {
                 """);
         int choice = 0;
         try {
-            choice = scanner.nextInt();
-            scanner.nextLine();
+            choice = Integer.parseInt(scanner.nextLine());
             assert 1 <= choice && choice <= 4;
         } catch (Exception e) {
             out.println("Please enter a number between 1 and 4");
@@ -103,7 +102,7 @@ public class Client {
                 Hail, new combatant! Please enter registration information in this format:
                     username password email
                 """);
-        String[] input = scanner.nextLine().split(" ");
+        String[] input = scanner.nextLine().strip().split(" ");
         try {
             facade.register(input[0], input[1], input[2]);
             out.println("Successfully registered!");
@@ -120,7 +119,7 @@ public class Client {
                 Please enter login information in this format:
                     username password
                 """);
-        String[] input = scanner.nextLine().split(" ");
+        String[] input = scanner.nextLine().strip().split(" ");
         try {
             return facade.login(input[0], input[1]);
         } catch (UnauthorizedException e) {
@@ -194,6 +193,8 @@ public class Client {
             for (int i = 0; i < list.size(); i++) {
                 Map<String, Object> map = list.get(i);
                 Object gameID = map.get("gameID");
+                double gameDouble = (double) gameID;
+                int gameInt = (int) gameDouble;
                 Object gameName = map.get("gameName");
                 Object blackUsername = map.get("blackUsername");
                 if (blackUsername == null) {
@@ -203,8 +204,8 @@ public class Client {
                 if (whiteUsername == null) {
                     whiteUsername = "none";
                 }
-                output += "Game ID: " + gameID + ".  Game Name: " + gameName + ".  Black Player: " + blackUsername +
-                        ".  White Player: " + whiteUsername + ".\n";
+                output += "Game ID: " + gameInt + "   Game Name: " + gameName + "   Black Player: " + blackUsername +
+                        "   White Player: " + whiteUsername + "\n";
             }
             out.println(output);
         } catch (IOException e) {
@@ -212,14 +213,22 @@ public class Client {
         }
     }
 
-    private static void joinGame(PrintStream out, Scanner scanner) {
+    private static void joinGame(PrintStream out, Scanner scanner, String authToken) {
         out.println("""
                 Enter the game number you wish to join, as well as which team you want to join as (white or black).
                 Please enter information in this format:
                     number team
                 """);
-        String input = scanner.nextLine();
-        out.println(input + ": need to implement this API");
+        String[] input = scanner.nextLine().strip().split(" ");
+        try {
+            facade.joinGame(authToken, Double.parseDouble(input[0]), input[1]);
+            out.println("You have joined the game!");
+            ChessBoard board = new ChessBoard();
+            board.resetBoard();
+            DrawChessBoard.drawBoard(board, input[1].equals("WHITE"));
+        } catch (IOException e) {
+            out.println("Something went wrong. Please try again");
+        }
     }
 
     private static void observeGame(PrintStream out, Scanner scanner) {
@@ -227,7 +236,9 @@ public class Client {
                 Enter the game number you wish to observe:
                 """);
         String input = scanner.nextLine();
-        out.println(input + ": need to implement this API");
+        ChessBoard board = new ChessBoard();
+        board.resetBoard();
+        DrawChessBoard.drawBoard(board, true);
     }
 
     private static void callDrawChessBoard() {

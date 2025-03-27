@@ -19,10 +19,10 @@ public class DrawChessBoard {
         int flipInt = 0;
 
         String letters = "   h  g  f  e  d  c  b  a   ";
-        boolean lighterFirst = true;
+        boolean lighterFirst = false;
         if (needToFlip) {
             letters = "   a  b  c  d  e  f  g  h   ";
-            lighterFirst = false;
+            lighterFirst = true;
             flipInt = 9;
         }
 
