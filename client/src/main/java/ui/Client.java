@@ -67,7 +67,7 @@ public class Client {
                         joinGame(out, scanner, authToken);
                         break;
                     case 6:
-                        observeGame(out, scanner);
+                        observeGame(out, scanner, authToken);
                         break;
                     case 7:
                         exit(out);
@@ -103,11 +103,15 @@ public class Client {
                     username password email
                 """);
         String[] input = scanner.nextLine().strip().split(" ");
+        if (input.length != 3) {
+            out.println("Please only enter a username, password, and email");
+            return;
+        }
         try {
             facade.register(input[0], input[1], input[2]);
             out.println("Successfully registered!");
         } catch (BadRequestException | IOException e) {
-            out.println("Please enter a username that only contains letters or numbers");
+            out.println("Please enter a username that only contains letters");
         } catch (UnavailableException e) {
             out.println("There is already a user with that name. Please choose a different name");
         }
@@ -120,6 +124,10 @@ public class Client {
                     username password
                 """);
         String[] input = scanner.nextLine().strip().split(" ");
+        if (input.length != 2) {
+            out.println("Please only enter a username and password");
+            return "";
+        }
         try {
             return facade.login(input[0], input[1]);
         } catch (UnauthorizedException e) {
@@ -149,8 +157,7 @@ public class Client {
                 """);
         int choice = 0;
         try {
-            choice = scanner.nextInt();
-            scanner.nextLine();
+            choice = Integer.parseInt(scanner.nextLine());
             assert 1 <= choice && choice <= 7;
         } catch (Exception e) {
             out.println("Please enter a number between 1 and 7");
@@ -220,27 +227,93 @@ public class Client {
                     number team
                 """);
         String[] input = scanner.nextLine().strip().split(" ");
+        if (input.length != 2) {
+            out.println("Please only enter a number and team color");
+            return;
+        }
+        String uppercaseTeamColor = input[1].toUpperCase();
+        if (!(uppercaseTeamColor.equals("WHITE") || uppercaseTeamColor.equals("BLACK"))) {
+            out.println("Please enter 'white' or 'black' to choose the team to join");
+            return;
+        }
+
         try {
-            facade.joinGame(authToken, Double.parseDouble(input[0]), input[1]);
+            Integer.parseInt(input[0]);
+        } catch (Exception e) {
+            out.println("Please enter a number for the gameID");
+            return;
+        }
+
+        ArrayList<Integer> gameIDs = new ArrayList<>();
+        try {
+            ArrayList<Map> list = facade.listGames(authToken);
+            if (list.isEmpty()) {
+                out.println("There are no games to join. Please create a game first.");
+                return;
+            }
+
+            for (int i = 0; i < list.size(); i++) {
+                Map<String, Object> map = list.get(i);
+                Object gameID = map.get("gameID");
+                double gameDouble = (double) gameID;
+                gameIDs.add((int) gameDouble);
+            }
+            if (!gameIDs.contains(Integer.parseInt(input[0]))) {
+                out.printf("Please enter a number between 1 and %d to join a game, or create a new game " +
+                        "for more options.\n", gameIDs.size());
+                return;
+            }
+            facade.joinGame(authToken, Double.parseDouble(input[0]), uppercaseTeamColor);
             out.println("You have joined the game!");
-            callDrawChessBoard(input[1].equals("WHITE"));
+            callDrawChessBoard(uppercaseTeamColor.equals("WHITE"));
+        } catch (UnavailableException e) {
+            out.println("That color is already taken. Please try the other color or join as an observer.");
         } catch (IOException e) {
             out.println("Something went wrong. Please try again");
         }
     }
 
-    private static void observeGame(PrintStream out, Scanner scanner) {
+    private static void observeGame(PrintStream out, Scanner scanner, String authToken) {
         out.println("""
                 Enter the game number you wish to observe:
                 """);
-        String input = scanner.nextLine();
-        callDrawChessBoard(true);
+        String input = scanner.nextLine().strip();
+
+        try {
+            Integer.parseInt(input);
+        } catch (Exception e) {
+            out.println("Please enter a valid number for the gameID");
+            return;
+        }
+
+        try {
+            ArrayList<Map> list = facade.listGames(authToken);
+            if (list.isEmpty()) {
+                out.println("There are no games to observe.");
+                return;
+            }
+            ArrayList<Integer> gameIDs = new ArrayList<>();
+            for (int i = 0; i < list.size(); i++) {
+                Map<String, Object> map = list.get(i);
+                Object gameID = map.get("gameID");
+                double gameDouble = (double) gameID;
+                gameIDs.add((int) gameDouble);
+            }
+            if (!gameIDs.contains(Integer.parseInt(input))) {
+                out.printf("Please enter a number between 1 and %d to observe a game.\n", gameIDs.size());
+                return;
+            }
+            callDrawChessBoard(true);
+        } catch (IOException e) {
+            out.println("Something went wrong. Please try again");
+        }
+
     }
 
     private static void callDrawChessBoard(boolean needToFlip) {
         ChessGame game =  new ChessGame();
         ChessBoard board = game.getBoard();
         board.resetBoard();
-        DrawChessBoard.drawBoard(board, game.getTeamTurn() == ChessGame.TeamColor.WHITE);
+        DrawChessBoard.drawBoard(board, needToFlip);
     }
 }
