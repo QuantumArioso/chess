@@ -221,7 +221,7 @@ public class SqlDAOTests {
         expectedGameData.add(gameDAO.addNewGame("The Boiling Isles"));
         expectedGameData.add(gameDAO.addNewGame("Hexside"));
 
-        ArrayList<GameData> actualGameData = gameDAO.getAllGameData();
+        ArrayList<GameData> actualGameData = SqlGameDAO.getAllGameData();
         assertEquals(expectedGameData.size(), actualGameData.size());
         for (int i = 0; i < actualGameData.size(); i++) {
             // idk if my games are actually equal...
@@ -235,7 +235,7 @@ public class SqlDAOTests {
     void testGetAllGameDataNegative() throws SQLException, DataAccessException {
         gameDAO.deleteAllGameData();
         ArrayList<GameData> expectedGameData = new ArrayList<>();
-        ArrayList<GameData> actualGameData = gameDAO.getAllGameData();
+        ArrayList<GameData> actualGameData = SqlGameDAO.getAllGameData();
         assertEquals(expectedGameData.size(), actualGameData.size());
     }
 

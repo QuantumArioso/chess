@@ -9,12 +9,13 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 
 public class SqlGameDAO extends SqlDAO implements GameDAO {
-    public static int gameCounter = 0;
+    public static int gameCounter = getAllGameData().size();
 
     public GameData addNewGame(String gameName) {
         if (gameName.isEmpty()) {
             return null;
         }
+        int size = getAllGameData().size();
 
         ChessGame chessGame = new ChessGame();
         String jsonChessGame = convertGameToJson(chessGame);
@@ -69,7 +70,7 @@ public class SqlGameDAO extends SqlDAO implements GameDAO {
         }
     }
 
-    private ChessGame convertJsonToGame(String jsonGame) {
+    private static ChessGame convertJsonToGame(String jsonGame) {
         var serializer = new Gson();
         return serializer.fromJson(jsonGame, ChessGame.class);
     }
@@ -110,7 +111,7 @@ public class SqlGameDAO extends SqlDAO implements GameDAO {
         }
     }
 
-    public ArrayList<GameData> getAllGameData() {
+    public static ArrayList<GameData> getAllGameData() {
         try (Connection conn = DatabaseManager.getConnection()) {
             ArrayList<GameData> allGameData = new ArrayList<>();
             var statement = "SELECT gameID, whiteUsername, blackUsername, gameName, game FROM game ";

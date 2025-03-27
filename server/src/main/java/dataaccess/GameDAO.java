@@ -13,7 +13,9 @@ public interface GameDAO {
 
     GameData updateGamePlayer(int gameID, ChessGame.TeamColor playerColor, String username);
 
-    ArrayList<GameData> getAllGameData();
+    static ArrayList<GameData> getAllGameData() {
+        return null;
+    }
 
     void deleteAllGameData() throws DataAccessException, SQLException;
 }

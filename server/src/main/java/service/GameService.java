@@ -13,7 +13,7 @@ public class GameService {
         AuthService.validateAuth(gameListRequest.authToken());
         GameDAO gameDAO = new SqlGameDAO();
 
-        return new GameListResult(gameDAO.getAllGameData());
+        return new GameListResult(SqlGameDAO.getAllGameData());
     }
 
     public GameCreateResult createGame(GameCreateRequest gameCreateRequest) throws DataAccessException {

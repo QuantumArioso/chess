@@ -53,8 +53,7 @@ public class MemoryGameDAO implements GameDAO {
         }
     }
 
-    @Override
-    public ArrayList<GameData> getAllGameData() {
+    public static ArrayList<GameData> getAllGameData() {
         return MockedDB.allGameData;
     }
 

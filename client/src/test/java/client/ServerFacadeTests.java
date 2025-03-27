@@ -105,7 +105,7 @@ public class ServerFacadeTests {
     @Test
     @DisplayName("Join Game Success")
     public void joinGamePositive() throws IOException {
-        facade.joinGame(authToken, "BLACK", 1.0);
+        facade.joinGame(authToken, 1.0, "BLACK");
         ArrayList<Map> games = facade.listGames(authToken);
         assertEquals(1, games.size());
         assertEquals("raine", games.get(0).get("blackUsername"));
@@ -114,7 +114,7 @@ public class ServerFacadeTests {
     @Test
     @DisplayName("Join Game Invalid authToken")
     public void joinGameNegative() {
-        assertThrows(UnauthorizedException.class, () -> facade.joinGame("bad authToken", "WHITE", 1.0));
+        assertThrows(UnauthorizedException.class, () -> facade.joinGame("bad authToken", 1.0, "WHITE"));
     }
 
     @Test

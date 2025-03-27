@@ -159,7 +159,7 @@ public class Client {
     }
     private static String logout(PrintStream out, String authToken) {
         out.println("""
-                Are you really leaving so soon?
+                See you later!
                 """);
         try {
             facade.logout(authToken);
@@ -177,7 +177,7 @@ public class Client {
         String input = scanner.nextLine().strip();
         try {
             double gameID = facade.createGame(authToken, input);
-            out.println("Game " + gameID + " has been created!");
+            out.println("Game " + (int) gameID + " has been created!");
         } catch (IOException e) {
             out.println("Something went wrong. Please try again");
         }
@@ -223,9 +223,7 @@ public class Client {
         try {
             facade.joinGame(authToken, Double.parseDouble(input[0]), input[1]);
             out.println("You have joined the game!");
-            ChessBoard board = new ChessBoard();
-            board.resetBoard();
-            DrawChessBoard.drawBoard(board, input[1].equals("WHITE"));
+            callDrawChessBoard(input[1].equals("WHITE"));
         } catch (IOException e) {
             out.println("Something went wrong. Please try again");
         }
@@ -236,12 +234,10 @@ public class Client {
                 Enter the game number you wish to observe:
                 """);
         String input = scanner.nextLine();
-        ChessBoard board = new ChessBoard();
-        board.resetBoard();
-        DrawChessBoard.drawBoard(board, true);
+        callDrawChessBoard(true);
     }
 
-    private static void callDrawChessBoard() {
+    private static void callDrawChessBoard(boolean needToFlip) {
         ChessGame game =  new ChessGame();
         ChessBoard board = game.getBoard();
         board.resetBoard();
