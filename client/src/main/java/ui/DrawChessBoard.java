@@ -19,17 +19,16 @@ public class DrawChessBoard {
         int flipInt = 0;
 
         String letters = "   h  g  f  e  d  c  b  a   ";
-        boolean lighterFirst = false;
+        boolean lighterFirst = true;
         if (needToFlip) {
             letters = "   a  b  c  d  e  f  g  h   ";
-            lighterFirst = true;
             flipInt = 9;
         }
 
         drawText(out, letters);
         for (int row = 1; row <= BOARD_WIDTH; row++) {
             out.print(9 - abs(9 - flipInt - row) + " ");
-            drawRowOfSquares(out, board, lighterFirst, abs(flipInt - row));
+            drawRowOfSquares(out, board, lighterFirst, abs(flipInt - row), flipInt);
             out.println(" " + (9 - abs(9 - flipInt - row)));
             lighterFirst = !lighterFirst;
         }
@@ -40,26 +39,49 @@ public class DrawChessBoard {
         out.println(text);
     }
 
-    private static void drawRowOfSquares(PrintStream out, ChessBoard board, boolean lighterFirst, int row) {
-        if (lighterFirst) {
-            for (int col = 1; col <= BOARD_WIDTH; col++) {
-                if (col % 2 != 0) {
-                    setBlue(out);
-                } else {
-                    setMagenta(out);
+    private static void drawRowOfSquares(PrintStream out, ChessBoard board, boolean lighterFirst, int row, int flipInt) {
+        if (flipInt == 0) {
+            if (lighterFirst) {
+                for (int col = BOARD_WIDTH; col > 0; col--) {
+                    if (col % 2 != 0) {
+                        setBlue(out);
+                    } else {
+                        setMagenta(out);
+                    }
+                    printPlayer(out, mapPiece(out, board, new ChessPosition(row, col)));
                 }
-                printPlayer(out, mapPiece(out, board, new ChessPosition(row, col)));
+            } else {
+                for (int col = BOARD_WIDTH; col > 0; col--) {
+                    if (col % 2 != 0) {
+                        setMagenta(out);
+                    } else {
+                        setBlue(out);
+                    }
+                    printPlayer(out, mapPiece(out, board, new ChessPosition(row, col)));
+                }
             }
         } else {
-            for (int col = 1; col <= BOARD_WIDTH; col++) {
-                if (col % 2 != 0) {
-                    setMagenta(out);
-                } else {
-                    setBlue(out);
+            if (lighterFirst) {
+                for (int col = 1; col <= BOARD_WIDTH; col++) {
+                    if (col % 2 != 0) {
+                        setBlue(out);
+                    } else {
+                        setMagenta(out);
+                    }
+                    printPlayer(out, mapPiece(out, board, new ChessPosition(row, col)));
                 }
-                printPlayer(out, mapPiece(out, board, new ChessPosition(row, col)));
+            } else {
+                for (int col = 1; col <= BOARD_WIDTH; col++) {
+                    if (col % 2 != 0) {
+                        setMagenta(out);
+                    } else {
+                        setBlue(out);
+                    }
+                    printPlayer(out, mapPiece(out, board, new ChessPosition(row, col)));
+                }
             }
         }
+
         resetColor(out);
     }
 
@@ -94,7 +116,7 @@ public class DrawChessBoard {
                 case KNIGHT -> BLACK_KNIGHT;
                 case ROOK -> BLACK_ROOK;
                 case QUEEN -> BLACK_QUEEN;
-                default -> BLACK_KING;
+                default -> WHITE_KING;
             };
         }
     }
