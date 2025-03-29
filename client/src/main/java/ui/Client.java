@@ -79,6 +79,70 @@ public class Client {
         }
     }
 
+    private static void gameplayLoop(PrintStream out, Scanner scanner) {
+        boolean leave = false;
+        while (!leave) {
+            int choice = gameplayHelpMessage(out, scanner);
+            switch (choice) {
+                case 1:
+                    break;
+                case 2:
+                    callDrawChessBoard(true);
+                    //TODO: this makes a new game each time. Need to pass in current game
+                    break;
+                case 3:
+                    makeMove();
+                    //TODO: implement this function
+                    break;
+                case 4:
+                    highlightLegalMoves();
+                    //TODO: implement this function
+                    break;
+                case 5:
+                    leave = true;
+                    break;
+                case 6:
+                    resignFromGame();
+                    //TODO: implement this function
+                    break;
+                default:
+                    out.println("Please enter a number between 1 and 6");
+            }
+        }
+    }
+
+    private static int gameplayHelpMessage(PrintStream out, Scanner scanner) {
+        out.println("""
+                Enter the number next to the option you wish to select:
+                1. Help
+                2. Redraw chess board
+                3. Make a move
+                4. Highlight legal moves
+                5. Leave the game
+                6. Resign from the game
+                """);
+        int choice = 0;
+        try {
+            choice = Integer.parseInt(scanner.nextLine());
+            assert 1 <= choice && choice <= 6;
+        } catch (Exception e) {
+            out.println("Please enter a number between 1 and 6");
+        }
+        return choice;
+    }
+
+    private static void makeMove() {
+
+    }
+
+    private static void highlightLegalMoves() {
+
+    }
+
+    private static void resignFromGame() {
+
+    }
+
     private static int preLoginHelpMessage(PrintStream out, Scanner scanner) {
         out.println("""
                 Enter the number next to the option you wish to select:
@@ -261,6 +325,7 @@ public class Client {
             facade.joinGame(authToken, Double.parseDouble(input[0]), uppercaseTeamColor);
             out.println("You have joined the game!");
             callDrawChessBoard(uppercaseTeamColor.equals("WHITE"));
+            gameplayLoop(out, scanner);
         } catch (UnavailableException e) {
             out.println("That color is already taken. Please try the other color or join as an observer.");
         } catch (IOException e) {
@@ -303,6 +368,7 @@ public class Client {
                 return;
             }
             callDrawChessBoard(true);
+            gameplayLoop(out, scanner);
         } catch (IOException e) {
             out.println("Something went wrong. Please try again");
         }
