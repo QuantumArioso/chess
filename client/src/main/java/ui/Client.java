@@ -82,7 +82,7 @@ public class Client {
         }
     }
 
-    private static void gameplayLoop(PrintStream out, Scanner scanner) {
+    private static void gameplayLoop(PrintStream out, Scanner scanner, ChessGame game) {
         boolean leave = false;
         while (!leave) {
             int choice = gameplayHelpMessage(out, scanner);
@@ -90,8 +90,7 @@ public class Client {
                 case 1:
                     break;
                 case 2:
-                    callDrawChessBoard(true);
-                    //TODO: this makes a new game each time. Need to pass in current game
+                    callDrawChessBoard(true, game);
                     break;
                 case 3:
                     makeMove();
@@ -252,12 +251,6 @@ public class Client {
         try {
             double gameID = facade.createGame(authToken, input);
             out.println("Game " + (int) gameID + " has been created!");
-
-//            ArrayList<Map> games = facade.listGames(authToken);
-//            int index = ((int) gameID) - 1;
-//            Map map = games.get(index);
-//            ChessGame game = (ChessGame) map.get("game");
-//            return game;
         } catch (IOException e) {
             out.println("Something went wrong. Please try again");
         }
@@ -317,22 +310,24 @@ public class Client {
 
         ArrayList<Integer> gameIDs = new ArrayList<>();
         try {
-            ArrayList<GameData> list = facade.listGames(authToken);
-            if (list.isEmpty()) {
+            ArrayList<GameData> games = facade.listGames(authToken);
+            if (games.isEmpty()) {
                 out.println("There are no games to join. Please create a game first.");
                 return;
             }
 
-            getGameIds(gameIDs, list);
+            getGameIds(gameIDs, games);
             if (!gameIDs.contains(Integer.parseInt(input[0]))) {
                 out.printf("Please enter a number between 1 and %d to join a game, or create a new game " +
                         "for more options.\n", gameIDs.size());
                 return;
             }
             facade.joinGame(authToken, Double.parseDouble(input[0]), uppercaseTeamColor);
+            int index = (Integer.parseInt(input[0])) - 1;
+            GameData gameData = games.get(index);
             out.println("You have joined the game!");
-            callDrawChessBoard(uppercaseTeamColor.equals("WHITE"));
-            gameplayLoop(out, scanner);
+            callDrawChessBoard(uppercaseTeamColor.equals("WHITE"), gameData.game());
+            gameplayLoop(out, scanner, gameData.game());
         } catch (UnavailableException e) {
             out.println("That color is already taken. Please try the other color or join as an observer.");
         } catch (IOException e) {
@@ -362,27 +357,28 @@ public class Client {
         }
 
         try {
-            ArrayList<GameData> list = facade.listGames(authToken);
-            if (list.isEmpty()) {
+            ArrayList<GameData> games = facade.listGames(authToken);
+            if (games.isEmpty()) {
                 out.println("There are no games to observe.");
                 return;
             }
             ArrayList<Integer> gameIDs = new ArrayList<>();
-            getGameIds(gameIDs, list);
+            getGameIds(gameIDs, games);
             if (!gameIDs.contains(Integer.parseInt(input))) {
                 out.printf("Please enter a number between 1 and %d to observe a game.\n", gameIDs.size());
                 return;
             }
-            callDrawChessBoard(true);
-            gameplayLoop(out, scanner);
+            int index = (Integer.parseInt(input)) - 1;
+            GameData gameData = games.get(index);
+            callDrawChessBoard(true, gameData.game());
+            gameplayLoop(out, scanner, gameData.game());
         } catch (IOException e) {
             out.println("Something went wrong. Please try again");
         }
 
     }
 
-    private static void callDrawChessBoard(boolean needToFlip) {
-        ChessGame game =  new ChessGame();
+    private static void callDrawChessBoard(boolean needToFlip, ChessGame game) {
         ChessBoard board = game.getBoard();
         board.resetBoard();
         DrawChessBoard.drawBoard(board, needToFlip);
