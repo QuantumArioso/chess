@@ -1,13 +1,11 @@
 package client;
 
+import chess.ChessGame;
 import com.google.gson.Gson;
-import com.google.gson.JsonObject;
+import handler.GameListResult;
+import model.GameData;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.Map;
 
@@ -17,6 +15,7 @@ public class ServerFacade {
     // depends on ClientCommunicator for get and post
     int port;
     String url;
+
     public ServerFacade(int port) {
         this.port = port;
         url = String.format("http://localhost:%d", port);
@@ -62,10 +61,10 @@ public class ServerFacade {
         return (double) body.get("gameID");
     }
 
-    public ArrayList listGames(String authToken) throws IOException {
+    public ArrayList<GameData> listGames(String authToken) throws IOException {
         String result = ClientCommunicator.doGet(url + "/game", authToken);
-        Map<String, Object> body = new Gson().fromJson(result, Map.class);
-        return (ArrayList) body.get("games");
+        GameListResult body = new Gson().fromJson(result, GameListResult.class);
+        return body.games();
     }
 
     public void joinGame(String authToken, double gameID, String playerColor) throws IOException {

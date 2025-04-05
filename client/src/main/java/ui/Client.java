@@ -7,6 +7,7 @@ import client.ServerFacade;
 import exceptions.BadRequestException;
 import exceptions.UnauthorizedException;
 import exceptions.UnavailableException;
+import model.GameData;
 
 import java.io.IOException;
 import java.io.PrintStream;
@@ -17,6 +18,8 @@ import java.util.Scanner;
 
 public class Client {
     static ServerFacade facade = new ServerFacade(8080);
+    static ChessGame game; //TODO: this is temporary until I figure out how to deserialize
+
 
     public static void main(String args[]) {
         PrintStream out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
@@ -249,6 +252,12 @@ public class Client {
         try {
             double gameID = facade.createGame(authToken, input);
             out.println("Game " + (int) gameID + " has been created!");
+
+//            ArrayList<Map> games = facade.listGames(authToken);
+//            int index = ((int) gameID) - 1;
+//            Map map = games.get(index);
+//            ChessGame game = (ChessGame) map.get("game");
+//            return game;
         } catch (IOException e) {
             out.println("Something went wrong. Please try again");
         }
@@ -259,23 +268,21 @@ public class Client {
                 These are all the existing games:
                 """);
         try {
-            ArrayList<Map> list = facade.listGames(authToken);
+            ArrayList<GameData> list = facade.listGames(authToken);
             String output = "";
             for (int i = 0; i < list.size(); i++) {
-                Map<String, Object> map = list.get(i);
-                Object gameID = map.get("gameID");
-                double gameDouble = (double) gameID;
-                int gameInt = (int) gameDouble;
-                Object gameName = map.get("gameName");
-                Object blackUsername = map.get("blackUsername");
+                GameData gameData = list.get(i);
+                int gameID = gameData.gameID();
+                String gameName = gameData.gameName();
+                String blackUsername = gameData.blackUsername();
                 if (blackUsername == null) {
                     blackUsername = "none";
                 }
-                Object whiteUsername = map.get("whiteUsername");
+                Object whiteUsername = gameData.whiteUsername();
                 if (whiteUsername == null) {
                     whiteUsername = "none";
                 }
-                output += "Game ID: " + gameInt + "   Game Name: " + gameName + "   Black Player: " + blackUsername +
+                output += "Game ID: " + gameID + "   Game Name: " + gameName + "   Black Player: " + blackUsername +
                         "   White Player: " + whiteUsername + "\n";
             }
             out.println(output);
@@ -310,7 +317,7 @@ public class Client {
 
         ArrayList<Integer> gameIDs = new ArrayList<>();
         try {
-            ArrayList<Map> list = facade.listGames(authToken);
+            ArrayList<GameData> list = facade.listGames(authToken);
             if (list.isEmpty()) {
                 out.println("There are no games to join. Please create a game first.");
                 return;
@@ -333,12 +340,11 @@ public class Client {
         }
     }
 
-    private static void getGameIds(ArrayList<Integer> gameIDs, ArrayList<Map> list) {
+    private static void getGameIds(ArrayList<Integer> gameIDs, ArrayList<GameData> list) {
         for (int i = 0; i < list.size(); i++) {
-            Map<String, Object> map = list.get(i);
-            Object gameID = map.get("gameID");
-            double gameDouble = (double) gameID;
-            gameIDs.add((int) gameDouble);
+            GameData gameData = list.get(i);
+            int gameID = gameData.gameID();
+            gameIDs.add(gameID);
         }
     }
 
@@ -356,7 +362,7 @@ public class Client {
         }
 
         try {
-            ArrayList<Map> list = facade.listGames(authToken);
+            ArrayList<GameData> list = facade.listGames(authToken);
             if (list.isEmpty()) {
                 out.println("There are no games to observe.");
                 return;
