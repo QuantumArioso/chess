@@ -14,7 +14,7 @@ import static ui.EscapeSequences.*;
 public class DrawChessBoard {
     private static final int BOARD_WIDTH = 8;
 
-    public static void drawBoard(ChessBoard board, boolean needToFlip) {
+    public static void drawBoard(ChessBoard board, boolean needToFlip, ChessPosition pos) {
         var out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
         int flipInt = 0;
 
@@ -27,13 +27,22 @@ public class DrawChessBoard {
         }
 
         drawText(out, letters);
-        for (int row = 1; row <= BOARD_WIDTH; row++) {
-            out.print(9 - abs(9 - flipInt - row) + " ");
-            drawRowOfSquares(out, board, lighterFirst, abs(flipInt - row), flipInt);
-            out.println(" " + (9 - abs(9 - flipInt - row)));
-            lighterFirst = !lighterFirst;
+        if (pos == null) {
+            for (int row = 1; row <= BOARD_WIDTH; row++) {
+                out.print(9 - abs(9 - flipInt - row) + " ");
+                drawRowOfSquares(out, board, lighterFirst, abs(flipInt - row), flipInt);
+                out.println(" " + (9 - abs(9 - flipInt - row)));
+                lighterFirst = !lighterFirst;
+            }
+        }
+        else {
+
         }
         drawText(out, letters);
+    }
+
+    private static void drawHighlightBoard(PrintStream out, ChessBoard board, ChessPosition pos, boolean needToFlip) {
+
     }
 
     private static void drawText(PrintStream out, String text) {

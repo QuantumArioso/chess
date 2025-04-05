@@ -97,7 +97,7 @@ public class Client {
                     //TODO: implement this function
                     break;
                 case 4:
-                    highlightLegalMoves();
+                    highlightLegalMoves(out, scanner, game);
                     //TODO: implement this function
                     break;
                 case 5:
@@ -137,7 +137,11 @@ public class Client {
 
     }
 
-    private static void highlightLegalMoves() {
+    private static void highlightLegalMoves(PrintStream out, Scanner scanner, ChessGame game) {
+        out.println("""
+                Please enter the coordinates of the piece who's moves you'd like to see in this format: e5
+                """);
+        String input = scanner.nextLine();
 
     }
 
@@ -381,6 +385,6 @@ public class Client {
     private static void callDrawChessBoard(boolean needToFlip, ChessGame game) {
         ChessBoard board = game.getBoard();
         board.resetBoard();
-        DrawChessBoard.drawBoard(board, needToFlip);
+        DrawChessBoard.drawBoard(board, needToFlip, null);
     }
 }
