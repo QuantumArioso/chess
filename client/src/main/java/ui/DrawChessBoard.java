@@ -1,12 +1,11 @@
 package ui;
 
-import chess.ChessBoard;
-import chess.ChessGame;
-import chess.ChessPiece;
-import chess.ChessPosition;
+import chess.*;
 
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Collection;
 
 import static java.lang.Math.abs;
 import static ui.EscapeSequences.*;
@@ -14,7 +13,7 @@ import static ui.EscapeSequences.*;
 public class DrawChessBoard {
     private static final int BOARD_WIDTH = 8;
 
-    public static void drawBoard(ChessBoard board, boolean needToFlip, ChessPosition pos) {
+    public static void drawBoard(ChessGame game, boolean needToFlip, ChessPosition pos) {
         var out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
         int flipInt = 0;
 
@@ -27,45 +26,66 @@ public class DrawChessBoard {
         }
 
         drawText(out, letters);
-        if (pos == null) {
-            for (int row = 1; row <= BOARD_WIDTH; row++) {
-                out.print(9 - abs(9 - flipInt - row) + " ");
-                drawRowOfSquares(out, board, lighterFirst, abs(flipInt - row), flipInt);
-                out.println(" " + (9 - abs(9 - flipInt - row)));
-                lighterFirst = !lighterFirst;
-            }
-        }
-        else {
-
+        Collection<ChessPosition> moveLocs = getHighlightSpots(game, pos);
+        for (int row = 1; row <= BOARD_WIDTH; row++) {
+            out.print(9 - abs(9 - flipInt - row) + " ");
+            drawRowOfSquares(out, game.getBoard(), lighterFirst, abs(flipInt - row), flipInt, moveLocs);
+            out.println(" " + (9 - abs(9 - flipInt - row)));
+            lighterFirst = !lighterFirst;
         }
         drawText(out, letters);
     }
 
-    private static void drawHighlightBoard(PrintStream out, ChessBoard board, ChessPosition pos, boolean needToFlip) {
-
+    private static Collection<ChessPosition> getHighlightSpots(ChessGame game, ChessPosition pos) {
+        if (pos == null) {
+            return new ArrayList<>();
+        }
+        Collection<ChessMove> validMoves = game.validMoves(pos);
+        Collection<ChessPosition> validPoses = new ArrayList<>();
+        for (ChessMove move : validMoves) {
+            validPoses.add(move.getEndPosition());
+        }
+        return validPoses;
     }
 
     private static void drawText(PrintStream out, String text) {
         out.println(text);
     }
 
-    private static void drawRowOfSquares(PrintStream out, ChessBoard board, boolean lighterFirst, int row, int flipInt) {
+    private static void drawRowOfSquares(PrintStream out, ChessBoard board, boolean lighterFirst, int row,
+                                         int flipInt, Collection<ChessPosition> moveLocs) {
         if (flipInt == 0) {
             if (lighterFirst) {
                 for (int col = BOARD_WIDTH; col > 0; col--) {
-                    if (col % 2 != 0) {
-                        setBlue(out);
+                    if (!moveLocs.isEmpty() && moveLocs.contains(new ChessPosition(row, col))) {
+                        if (col % 2 != 0) {
+                            setGreen(out);
+                        } else {
+                            setDarkGreen(out);
+                        }
                     } else {
-                        setMagenta(out);
+                        if (col % 2 != 0) {
+                            setBlue(out);
+                        } else {
+                            setMagenta(out);
+                        }
                     }
                     printPlayer(out, mapPiece(out, board, new ChessPosition(row, col)));
                 }
             } else {
                 for (int col = BOARD_WIDTH; col > 0; col--) {
-                    if (col % 2 != 0) {
-                        setMagenta(out);
+                    if (!moveLocs.isEmpty() && moveLocs.contains(new ChessPosition(row, col))) {
+                        if (col % 2 != 0) {
+                            setDarkGreen(out);
+                        } else {
+                            setGreen(out);
+                        }
                     } else {
-                        setBlue(out);
+                        if (col % 2 != 0) {
+                            setMagenta(out);
+                        } else {
+                            setBlue(out);
+                        }
                     }
                     printPlayer(out, mapPiece(out, board, new ChessPosition(row, col)));
                 }
@@ -73,25 +93,40 @@ public class DrawChessBoard {
         } else {
             if (lighterFirst) {
                 for (int col = 1; col <= BOARD_WIDTH; col++) {
-                    if (col % 2 != 0) {
-                        setBlue(out);
+                    if (!moveLocs.isEmpty() && moveLocs.contains(new ChessPosition(row, col))) {
+                        if (col % 2 != 0) {
+                            setGreen(out);
+                        } else {
+                            setDarkGreen(out);
+                        }
                     } else {
-                        setMagenta(out);
+                        if (col % 2 != 0) {
+                            setBlue(out);
+                        } else {
+                            setMagenta(out);
+                        }
                     }
                     printPlayer(out, mapPiece(out, board, new ChessPosition(row, col)));
                 }
             } else {
                 for (int col = 1; col <= BOARD_WIDTH; col++) {
-                    if (col % 2 != 0) {
-                        setMagenta(out);
+                    if (!moveLocs.isEmpty() && moveLocs.contains(new ChessPosition(row, col))) {
+                        if (col % 2 != 0) {
+                            setDarkGreen(out);
+                        } else {
+                            setGreen(out);
+                        }
                     } else {
-                        setBlue(out);
+                        if (col % 2 != 0) {
+                            setMagenta(out);
+                        } else {
+                            setBlue(out);
+                        }
                     }
                     printPlayer(out, mapPiece(out, board, new ChessPosition(row, col)));
                 }
             }
         }
-
         resetColor(out);
     }
 
@@ -139,6 +174,15 @@ public class DrawChessBoard {
     private static void setBlue(PrintStream out) {
         out.print(SET_BG_COLOR_BLUE);
         out.print(SET_TEXT_COLOR_BLUE);
+    }
+
+    private static void setGreen(PrintStream out) {
+        out.print(SET_BG_COLOR_GREEN);
+        out.print(SET_TEXT_COLOR_GREEN);
+    }
+
+    private static void setDarkGreen(PrintStream out) {
+        out.print(SET_BG_COLOR_DARK_GREEN);
     }
 
     private static void resetColor(PrintStream out) {

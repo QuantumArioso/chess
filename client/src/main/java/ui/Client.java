@@ -2,7 +2,7 @@ package ui;
 
 import chess.ChessBoard;
 import chess.ChessGame;
-import client.ClientCommunicator;
+import chess.ChessPosition;
 import client.ServerFacade;
 import exceptions.BadRequestException;
 import exceptions.UnauthorizedException;
@@ -12,9 +12,7 @@ import model.GameData;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.Scanner;
+import java.util.*;
 
 public class Client {
     static ServerFacade facade = new ServerFacade(8080);
@@ -82,7 +80,7 @@ public class Client {
         }
     }
 
-    private static void gameplayLoop(PrintStream out, Scanner scanner, ChessGame game) {
+    private static void gameplayLoop(PrintStream out, Scanner scanner, ChessGame game, ChessGame.TeamColor teamColor) {
         boolean leave = false;
         while (!leave) {
             int choice = gameplayHelpMessage(out, scanner);
@@ -90,15 +88,14 @@ public class Client {
                 case 1:
                     break;
                 case 2:
-                    callDrawChessBoard(true, game);
+                    callDrawChessBoard(teamColor.equals(ChessGame.TeamColor.WHITE), game, null);
                     break;
                 case 3:
                     makeMove();
                     //TODO: implement this function
                     break;
                 case 4:
-                    highlightLegalMoves(out, scanner, game);
-                    //TODO: implement this function
+                    highlightLegalMoves(out, scanner, game, teamColor);
                     break;
                 case 5:
                     leave = true;
@@ -137,12 +134,43 @@ public class Client {
 
     }
 
-    private static void highlightLegalMoves(PrintStream out, Scanner scanner, ChessGame game) {
+    private static void highlightLegalMoves(PrintStream out, Scanner scanner, ChessGame game,
+                                            ChessGame.TeamColor teamColor) {
         out.println("""
                 Please enter the coordinates of the piece who's moves you'd like to see in this format: e5
                 """);
-        String input = scanner.nextLine();
+        String[] input = scanner.nextLine().split("");
 
+        Map<String, Integer> coordinates = new HashMap<>();
+        coordinates.put("a", 1);
+        coordinates.put("b", 2);
+        coordinates.put("c", 3);
+        coordinates.put("d", 4);
+        coordinates.put("e", 5);
+        coordinates.put("f", 6);
+        coordinates.put("g", 7);
+        coordinates.put("h", 8);
+
+        Set<String> keys = coordinates.keySet();
+        Collection<Integer> values = coordinates.values();
+        int row;
+        try {
+            row = Integer.parseInt(input[1]);
+        } catch (Exception e) {
+            out.println("Please enter a valid coordinate position");
+            return;
+        }
+        if (!keys.contains(input[0]) || !values.contains(row)) {
+            out.println("Please enter a valid coordinate position");
+            return;
+        }
+        int col = coordinates.get(input[0]);
+        ChessPosition pos = new ChessPosition(row, col);
+        if (game.getBoard().getPiece(pos) == null) {
+            out.println("There is not a piece at that location");
+            return;
+        }
+        callDrawChessBoard(teamColor.equals(ChessGame.TeamColor.WHITE), game, pos);
     }
 
     private static void resignFromGame() {
@@ -330,8 +358,14 @@ public class Client {
             int index = (Integer.parseInt(input[0])) - 1;
             GameData gameData = games.get(index);
             out.println("You have joined the game!");
-            callDrawChessBoard(uppercaseTeamColor.equals("WHITE"), gameData.game());
-            gameplayLoop(out, scanner, gameData.game());
+            callDrawChessBoard(uppercaseTeamColor.equals("WHITE"), gameData.game(), null);
+            ChessGame.TeamColor teamColor;
+            if (uppercaseTeamColor.equals("WHITE")) {
+                teamColor = ChessGame.TeamColor.WHITE;
+            } else {
+                teamColor = ChessGame.TeamColor.BLACK;
+            }
+            gameplayLoop(out, scanner, gameData.game(), teamColor);
         } catch (UnavailableException e) {
             out.println("That color is already taken. Please try the other color or join as an observer.");
         } catch (IOException e) {
@@ -374,17 +408,17 @@ public class Client {
             }
             int index = (Integer.parseInt(input)) - 1;
             GameData gameData = games.get(index);
-            callDrawChessBoard(true, gameData.game());
-            gameplayLoop(out, scanner, gameData.game());
+            callDrawChessBoard(true, gameData.game(), null);
+            gameplayLoop(out, scanner, gameData.game(), ChessGame.TeamColor.WHITE);
         } catch (IOException e) {
             out.println("Something went wrong. Please try again");
         }
 
     }
 
-    private static void callDrawChessBoard(boolean needToFlip, ChessGame game) {
+    private static void callDrawChessBoard(boolean needToFlip, ChessGame game, ChessPosition pos) {
         ChessBoard board = game.getBoard();
         board.resetBoard();
-        DrawChessBoard.drawBoard(board, needToFlip, null);
+        DrawChessBoard.drawBoard(game, needToFlip, pos);
     }
 }
