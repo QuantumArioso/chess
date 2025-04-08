@@ -3,6 +3,7 @@ package client;
 import exceptions.BadRequestException;
 import exceptions.UnauthorizedException;
 import exceptions.UnavailableException;
+import model.GameData;
 import org.junit.jupiter.api.*;
 import server.Server;
 
@@ -106,9 +107,9 @@ public class ServerFacadeTests {
     @DisplayName("Join Game Success")
     public void joinGamePositive() throws IOException {
         facade.joinGame(authToken, 1.0, "BLACK");
-        ArrayList<Map> games = facade.listGames(authToken);
+        ArrayList<GameData> games = facade.listGames(authToken);
         assertEquals(1, games.size());
-        assertEquals("raine", games.get(0).get("blackUsername"));
+        assertEquals("raine", games.getFirst().blackUsername());
     }
 
     @Test
