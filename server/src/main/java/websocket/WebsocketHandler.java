@@ -9,6 +9,8 @@ import dataaccess.UnauthorizedException;
 import websocket.messages.NotificationMessage;
 import websocket.messages.ServerMessage;
 
+import java.io.IOException;
+
 import static dataaccess.SqlGameDAO.getUsername;
 
 @WebSocket
@@ -40,7 +42,7 @@ public class WebsocketHandler {
         }
     }
 
-    private void connect(Session session, String username, UserGameCommand command) {
+    private void connect(Session session, String username, UserGameCommand command) throws IOException {
         connections.add(username, session);
         String message = String.format("%s has joined the game", username);
         var notification = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, message);
