@@ -16,8 +16,6 @@ import java.util.*;
 
 public class Client {
     static ServerFacade facade = new ServerFacade(8080);
-    static ChessGame game; //TODO: this is temporary until I figure out how to deserialize
-
 
     public static void main(String args[]) {
         PrintStream out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
