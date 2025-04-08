@@ -6,6 +6,7 @@ import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 import websocket.commands.UserGameCommand;
 
 import dataaccess.UnauthorizedException;
+import websocket.messages.LoadGameMessage;
 import websocket.messages.NotificationMessage;
 import websocket.messages.ServerMessage;
 
@@ -44,9 +45,12 @@ public class WebsocketHandler {
 
     private void connect(Session session, String username, UserGameCommand command) throws IOException {
         connections.add(username, session);
-        String message = String.format("%s has joined the game", username);
-        var notification = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, message);
+        var notification = new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, command.getGameID());
         connections.broadcast(username, notification);
+
+        String message = String.format("%s has joined the game", username);
+        var notification2 = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, message);
+        connections.broadcast(username, notification2);
     }
 
     private void makeMove(Session session, String username, MakeMoveCommand command) {
