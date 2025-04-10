@@ -48,7 +48,7 @@ public class SqlUserDAO extends SqlDAO implements UserDAO {
         String hashedPassword = hashUserPassword(userData.password());
         String email = userData.email();
         try (Connection conn = DatabaseManager.getConnection()) {
-            if (username.matches("[a-zA-Z]+")) {
+            if (username.matches("[a-zA-Z0-9]+")) {
                 var statement = "INSERT INTO user (username, password, email) VALUES(?, ?, ?)";
                 try (var preparedStatement = conn.prepareStatement(statement)) {
                     preparedStatement.setString(1, username);

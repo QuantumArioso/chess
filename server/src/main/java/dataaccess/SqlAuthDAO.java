@@ -10,7 +10,7 @@ public class SqlAuthDAO extends SqlDAO implements AuthDAO {
     public AuthData createAuth(String username) throws DataAccessException {
         String authToken = AuthData.generateAuthToken();
         try (Connection conn = DatabaseManager.getConnection()) {
-            if (username.matches("[a-zA-Z]+")) {
+            if (username.matches("[a-zA-Z0-9]+")) {
                 var statement = "INSERT INTO auth (authToken, username) VALUES(?, ?)";
                 try (var preparedStatement = conn.prepareStatement(statement)) {
                     preparedStatement.setString(1, authToken);
