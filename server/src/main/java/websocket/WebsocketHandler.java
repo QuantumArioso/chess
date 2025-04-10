@@ -1,6 +1,6 @@
 package websocket;
 
-import chess.ChessGame;
+import chess.*;
 import com.google.gson.Gson;
 import dataaccess.SqlGameDAO;
 import model.GameData;
@@ -8,6 +8,7 @@ import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 import websocket.commands.LeaveGameCommand;
+import websocket.commands.MakeMoveCommand;
 import websocket.commands.UserGameCommand;
 
 import dataaccess.UnauthorizedException;
@@ -31,25 +32,20 @@ public class WebsocketHandler {
         try {
             UserGameCommand command = new Gson().fromJson(msg, UserGameCommand.class);
 
-            // Throws a custom UnauthorizedException. Yours may work differently.
-
             String username = sqlAuthDAO.getAuth(command.getAuthToken()).username();
             GameData gameData = sqlGameDAO.getGameData(command.getGameID());
             int gameID = gameData.gameID(); // throws an exception if invalid gameID
 
             if (command.getCommandType().equals(UserGameCommand.CommandType.LEAVE)) {
-                if (username.equals(gameData.blackUsername())) {
-                    command = new LeaveGameCommand(command.getAuthToken(), command.getGameID(), ChessGame.TeamColor.BLACK);
-                } else if (username.equals(gameData.whiteUsername())) {
-                    command = new LeaveGameCommand(command.getAuthToken(), command.getGameID(), ChessGame.TeamColor.WHITE);
-                } else {
-                    command = new LeaveGameCommand(command.getAuthToken(), command.getGameID(), null);
-                }
+                ChessGame.TeamColor teamColor = getTeamColor(username, gameData);
+                command = new LeaveGameCommand(command.getAuthToken(), command.getGameID(), teamColor);
+            } else if (msg.contains("move")) {
+                MakeMoveCommand command2 = new Gson().fromJson(msg, MakeMoveCommand.class);
+                makeMove(session, username, command2, gameData);
             }
 
             switch (command.getCommandType()) {
                 case CONNECT -> connect(session, username, command);
-//                case MAKE_MOVE -> makeMove(session, username, (MakeMoveCommand) command);
                 case LEAVE -> leaveGame(session, username, (LeaveGameCommand) command);
 //                case RESIGN -> resign(session, username, (ResignCommand) command);
             }
@@ -73,11 +69,61 @@ public class WebsocketHandler {
         var notification2 = new NotificationMessage(message);
         connections.broadcast(username, notification2);
     }
-//
-//    private void makeMove(Session session, String username, MakeMoveCommand command) {
-//
-//    }
-//
+
+    private void makeMove(Session session, String username, MakeMoveCommand command, GameData gameData) throws IOException {
+        ChessMove move = command.getMove();
+        ChessGame game = sqlGameDAO.getGameData(command.getGameID()).game();
+        ChessGame.TeamColor teamColor = getTeamColor(username, gameData);
+        ChessGame.TeamColor teamTurn = game.getTeamTurn();
+        if (!teamTurn.equals(teamColor)) {
+            String message = "Error: It is not your turn. You cannot make a move";
+            session.getRemote().sendString(new Gson().toJson(new ErrorMessage(message)));
+            return;
+        }
+        try {
+            if (teamColor.equals(game.getBoard().getPiece(move.getStartPosition()).getTeamColor())) {
+                game.makeMove(move);
+                sqlGameDAO.updateChessGame(new Gson().toJson(game), gameData.gameID());
+                LoadGameMessage notification = new LoadGameMessage(command.getGameID());
+                connections.broadcast("", notification);
+            } else {
+                String message = "Error: You cannot move that piece";
+                session.getRemote().sendString(new Gson().toJson(new ErrorMessage(message)));
+                return;
+            }
+        } catch (InvalidMoveException e) {
+            String errorMessage = new Gson().toJson(new ErrorMessage("Error: " + e.getMessage()));
+            session.getRemote().sendString(errorMessage);
+            return;
+        }
+
+        ChessPosition pos = move.getEndPosition();
+        ChessPiece piece = game.getBoard().getPiece(pos);
+        String message = String.format("%s has moved %s to %s", username, piece, pos);
+        var notif = new NotificationMessage(message);
+        connections.broadcast(username, notif);
+
+        if (game.isInStalemate(teamColor)) {
+            message = "You are in stalemate";
+            session.getRemote().sendString(new Gson().toJson(new NotificationMessage(message)));
+
+            message = String.format("%s is in stalemate", username);
+            connections.broadcast(username, new NotificationMessage(message));
+        } else if (game.isInCheckmate(teamColor)) {
+            message = "You are in checkmate";
+            session.getRemote().sendString(new Gson().toJson(new NotificationMessage(message)));
+
+            message = String.format("%s is in checkmate", username);
+            connections.broadcast(username, new NotificationMessage(message));
+        } else if (game.isInCheck(teamColor)) {
+            message = "You are in check";
+            session.getRemote().sendString(new Gson().toJson(new NotificationMessage(message)));
+
+            message = String.format("%s is in check", username);
+            connections.broadcast(username, new NotificationMessage(message));
+        }
+    }
+
     private void leaveGame(Session session, String username, LeaveGameCommand command) throws IOException {
         connections.remove(username);
         if (command.getTeamColor() != null) {
@@ -93,4 +139,13 @@ public class WebsocketHandler {
 //
 //    }
 
+    private ChessGame.TeamColor getTeamColor(String username, GameData gameData) {
+        if (username.equals(gameData.blackUsername())) {
+            return ChessGame.TeamColor.BLACK;
+        } else if (username.equals(gameData.whiteUsername())) {
+            return ChessGame.TeamColor.WHITE;
+        } else {
+            return null;
+        }
+    }
 }

@@ -112,6 +112,27 @@ public class SqlGameDAO extends SqlDAO implements GameDAO {
         }
     }
 
+    public GameData updateChessGame(String game, int gameID) {
+        try (Connection conn = DatabaseManager.getConnection()){
+            GameData oldGameData = getGameData(gameID);
+            if (oldGameData == null) {
+                return null;
+            }
+
+            var statement = "UPDATE game SET game = ? WHERE gameID = ?";
+            try (var preparedStatement = conn.prepareStatement(statement)) {
+                preparedStatement.setString(1, game);
+                preparedStatement.setInt(2, gameID);
+                preparedStatement.executeUpdate();
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+            return getGameData(gameID);
+        } catch (DataAccessException | SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public static ArrayList<GameData> getAllGameData() {
         try (Connection conn = DatabaseManager.getConnection()) {
             ArrayList<GameData> allGameData = new ArrayList<>();
