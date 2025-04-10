@@ -5,8 +5,8 @@ import chess.ChessGame;
 public class LoadGameMessage extends ServerMessage {
     int game;
 
-    public LoadGameMessage(ServerMessageType type, int game) {
-        super(type);
+    public LoadGameMessage(int game) {
+        super(ServerMessageType.LOAD_GAME);
         this.game = game;
     }
 }

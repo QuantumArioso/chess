@@ -5,6 +5,7 @@ import com.google.gson.Gson;
 import dataaccess.*;
 import handler.*;
 import spark.*;
+import websocket.WebsocketHandler;
 
 import java.sql.SQLException;
 import java.util.Map;
@@ -19,6 +20,7 @@ public class Server {
         new SqlDAO();
 
         // Register your endpoints and handle exceptions here.
+        Spark.webSocket("/ws", new WebsocketHandler());
 
         Spark.post("/user", this::registerBody); //register
         Spark.post("/session", this::loginBody); //login

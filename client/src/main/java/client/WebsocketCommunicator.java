@@ -5,7 +5,7 @@ import exceptions.BadRequestException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import websocket.commands.UserGameCommand;
-import websocket.messages.ServerMessage;
+import websocket.messages.NotificationMessage;
 
 
 import javax.websocket.*;
@@ -32,7 +32,7 @@ public class WebsocketCommunicator extends Endpoint {
             this.session.addMessageHandler(new MessageHandler.Whole<String>() {
                 @Override
                 public void onMessage(String message) {
-                    ServerMessage notification = new Gson().fromJson(message, ServerMessage.class);
+                    NotificationMessage notification = new Gson().fromJson(message, NotificationMessage.class);
                     notificationHandler.notify(notification);
                 }
             });
@@ -45,5 +45,15 @@ public class WebsocketCommunicator extends Endpoint {
     //Endpoint requires this method, but you don't have to do anything
     @Override
     public void onOpen(Session session, EndpointConfig endpointConfig) {
+    }
+
+    public void connect(String authToken, int gameID) {
+        try {
+            var action = new UserGameCommand(UserGameCommand.CommandType.CONNECT, authToken, gameID);
+            this.session.getBasicRemote().sendText(new Gson().toJson(action));
+        } catch (IOException ex) {
+            log.error(ex.getMessage());
+            throw new BadRequestException();
+        }
     }
 }

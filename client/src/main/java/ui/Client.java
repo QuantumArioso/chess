@@ -4,20 +4,25 @@ import chess.ChessBoard;
 import chess.ChessGame;
 import chess.ChessPosition;
 import client.ServerFacade;
+import client.ServerMessageObserver;
 import exceptions.BadRequestException;
 import exceptions.UnauthorizedException;
 import exceptions.UnavailableException;
 import model.GameData;
+import websocket.messages.NotificationMessage;
+import websocket.messages.ServerMessage;
 
 import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
-public class Client {
+import static ui.EscapeSequences.SET_TEXT_COLOR_RED;
+
+public class Client implements ServerMessageObserver {
     static ServerFacade facade = new ServerFacade(8080);
 
-    public static void main(String args[]) {
+    public void run() {
         PrintStream out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
         Scanner scanner = new Scanner(System.in);
         out.print("""
@@ -418,5 +423,10 @@ public class Client {
         ChessBoard board = game.getBoard();
         board.resetBoard();
         DrawChessBoard.drawBoard(game, needToFlip, pos);
+    }
+
+    @Override
+    public void notify(NotificationMessage notification) {
+        System.out.println(SET_TEXT_COLOR_RED + notification.getMessage());
     }
 }

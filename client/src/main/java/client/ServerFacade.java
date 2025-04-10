@@ -4,6 +4,7 @@ import chess.ChessGame;
 import com.google.gson.Gson;
 import handler.GameListResult;
 import model.GameData;
+import ui.Client;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -15,10 +16,12 @@ public class ServerFacade {
     // depends on ClientCommunicator for get and post
     int port;
     String url;
+    WebsocketCommunicator websocketCommunicator;
 
     public ServerFacade(int port) {
         this.port = port;
         url = String.format("http://localhost:%d", port);
+        websocketCommunicator = new WebsocketCommunicator(url, new Client());
     }
 
     public String register(String username, String password, String email) throws IOException {
@@ -75,6 +78,7 @@ public class ServerFacade {
                 }
                 """, playerColor, gameID);
         ClientCommunicator.doPut(url + "/game", data, authToken);
+        websocketCommunicator.connect(authToken, (int) gameID);
     }
 
     public void clear() throws IOException {
