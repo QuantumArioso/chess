@@ -60,14 +60,14 @@ public class WebsocketHandler {
     }
 
     private void connect(Session session, String username, UserGameCommand command) throws IOException {
-        connections.add(username, session);
+        connections.add(username, session, command.getGameID());
         LoadGameMessage notification = new LoadGameMessage(command.getGameID());
         String notif = new Gson().toJson(notification);
         session.getRemote().sendString(notif);
 
         String message = String.format("%s has joined the game", username);
         var notification2 = new NotificationMessage(message);
-        connections.broadcast(username, notification2);
+        connections.broadcast(username, command.getGameID(), notification2);
     }
 
     private void makeMove(Session session, String username, MakeMoveCommand command, GameData gameData) throws IOException {
@@ -90,7 +90,7 @@ public class WebsocketHandler {
                 game.makeMove(move);
                 sqlGameDAO.updateChessGame(new Gson().toJson(game), gameData.gameID());
                 LoadGameMessage notification = new LoadGameMessage(command.getGameID());
-                connections.broadcast("", notification);
+                connections.broadcast("", command.getGameID(), notification);
             } else {
                 String message = "Error: You cannot move that piece";
                 session.getRemote().sendString(new Gson().toJson(new ErrorMessage(message)));
@@ -106,26 +106,26 @@ public class WebsocketHandler {
         ChessPiece piece = game.getBoard().getPiece(pos);
         String message = String.format("%s has moved %s to %s", username, piece, pos);
         var notif = new NotificationMessage(message);
-        connections.broadcast(username, notif);
+        connections.broadcast(username, command.getGameID(), notif);
 
         if (game.isInStalemate(teamColor)) {
             message = "You are in stalemate";
             session.getRemote().sendString(new Gson().toJson(new NotificationMessage(message)));
 
             message = String.format("%s is in stalemate", username);
-            connections.broadcast(username, new NotificationMessage(message));
+            connections.broadcast(username, command.getGameID(), new NotificationMessage(message));
         } else if (game.isInCheckmate(teamColor)) {
             message = "You are in checkmate";
             session.getRemote().sendString(new Gson().toJson(new NotificationMessage(message)));
 
             message = String.format("%s is in checkmate", username);
-            connections.broadcast(username, new NotificationMessage(message));
+            connections.broadcast(username, command.getGameID(), new NotificationMessage(message));
         } else if (game.isInCheck(teamColor)) {
             message = "You are in check";
             session.getRemote().sendString(new Gson().toJson(new NotificationMessage(message)));
 
             message = String.format("%s is in check", username);
-            connections.broadcast(username, new NotificationMessage(message));
+            connections.broadcast(username, command.getGameID(), new NotificationMessage(message));
         }
     }
 
@@ -137,7 +137,7 @@ public class WebsocketHandler {
 
         String message = String.format("%s has left the game", username);
         var notification2 = new NotificationMessage(message);
-        connections.broadcast(username, notification2);
+        connections.broadcast(username, command.getGameID(), notification2);
     }
 
     private void resign(Session session, String username, UserGameCommand command, ChessGame.TeamColor teamColor) throws IOException {
@@ -156,7 +156,7 @@ public class WebsocketHandler {
         sqlGameDAO.updateChessGame(new Gson().toJson(game), command.getGameID());
         String message = String.format("%s has resigned from the game", username);
         var notification = new NotificationMessage(message);
-        connections.broadcast("", notification);
+        connections.broadcast("", command.getGameID(), notification);
     }
 
     private ChessGame.TeamColor getTeamColor(String username, GameData gameData) {

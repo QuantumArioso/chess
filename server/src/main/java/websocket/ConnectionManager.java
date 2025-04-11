@@ -6,35 +6,43 @@ import websocket.messages.ServerMessage;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ConnectionManager {
-    public final ConcurrentHashMap<String, Connection> connections = new ConcurrentHashMap<>();
+    public final ConcurrentHashMap<Connection, Integer> connections = new ConcurrentHashMap<>();
 
-    public void add(String visitorName, Session session) {
+    public void add(String visitorName, Session session, Integer gameID) {
         var connection = new Connection(visitorName, session);
-        connections.put(visitorName, connection);
+        connections.put(connection, gameID);
     }
 
     public void remove(String visitorName) {
-        connections.remove(visitorName);
+        for (Connection connection : connections.keySet()) {
+            String conn = connection.visitorName;
+            if (conn.equals(visitorName)) {
+                connections.remove(connection);
+            }
+        }
+
     }
 
-    public void broadcast(String excludeVisitorName, ServerMessage notification) throws IOException {
+    public void broadcast(String excludeVisitorName, Integer gameID, ServerMessage notification) throws IOException {
         var removeList = new ArrayList<Connection>();
-        for (var c : connections.values()) {
-            if (c.session.isOpen()) {
-                if (!c.visitorName.equals(excludeVisitorName)) {
-                    c.send(new Gson().toJson(notification));
+        for (Connection connection : connections.keySet()) {
+            if (connection.session.isOpen()) {
+                if (Objects.equals(connections.get(connection), gameID) && !connection.visitorName.equals(excludeVisitorName)) {
+                    connection.send(new Gson().toJson(notification));
                 }
             } else {
-                removeList.add(c);
+                removeList.add(connection);
             }
         }
 
         // Clean up any connections that were left open.
-        for (var c : removeList) {
-            connections.remove(c.visitorName);
+        for (var connection : removeList) {
+            connections.remove(connection);
         }
     }
 }
