@@ -35,9 +35,9 @@ public class WebsocketHandler {
             String username = sqlAuthDAO.getAuth(command.getAuthToken()).username();
             GameData gameData = sqlGameDAO.getGameData(command.getGameID());
             int gameID = gameData.gameID(); // throws an exception if invalid gameID
+            ChessGame.TeamColor teamColor = getTeamColor(username, gameData);
 
             if (command.getCommandType().equals(UserGameCommand.CommandType.LEAVE)) {
-                ChessGame.TeamColor teamColor = getTeamColor(username, gameData);
                 command = new LeaveGameCommand(command.getAuthToken(), command.getGameID(), teamColor);
             } else if (msg.contains("move")) {
                 MakeMoveCommand command2 = new Gson().fromJson(msg, MakeMoveCommand.class);
@@ -47,7 +47,7 @@ public class WebsocketHandler {
             switch (command.getCommandType()) {
                 case CONNECT -> connect(session, username, command);
                 case LEAVE -> leaveGame(session, username, (LeaveGameCommand) command);
-//                case RESIGN -> resign(session, username, (ResignCommand) command);
+                case RESIGN -> resign(session, username, command, teamColor);
             }
 //        } catch (UnauthorizedException ex) {
 //            // Serializes and sends the error message
@@ -77,6 +77,11 @@ public class WebsocketHandler {
         ChessGame.TeamColor teamTurn = game.getTeamTurn();
         if (!teamTurn.equals(teamColor)) {
             String message = "Error: It is not your turn. You cannot make a move";
+            session.getRemote().sendString(new Gson().toJson(new ErrorMessage(message)));
+            return;
+        }
+        if (game.getGameOver()) {
+            String message = "Error: The game is over. You cannot make a move";
             session.getRemote().sendString(new Gson().toJson(new ErrorMessage(message)));
             return;
         }
@@ -134,10 +139,25 @@ public class WebsocketHandler {
         var notification2 = new NotificationMessage(message);
         connections.broadcast(username, notification2);
     }
-//
-//    private void resign(Session session, String username, ResignCommand command) {
-//
-//    }
+
+    private void resign(Session session, String username, UserGameCommand command, ChessGame.TeamColor teamColor) throws IOException {
+        ChessGame game = sqlGameDAO.getGameData(command.getGameID()).game();
+        if (game.getGameOver()) {
+            String message = "Error: The game is already over";
+            session.getRemote().sendString(new Gson().toJson(new ErrorMessage(message)));
+            return;
+        }
+        if (teamColor == null) {
+            String message = "Error: You are an observer. You cannot resign";
+            session.getRemote().sendString(new Gson().toJson(new ErrorMessage(message)));
+            return;
+        }
+        game.setGameOver(true);
+        sqlGameDAO.updateChessGame(new Gson().toJson(game), command.getGameID());
+        String message = String.format("%s has resigned from the game", username);
+        var notification = new NotificationMessage(message);
+        connections.broadcast("", notification);
+    }
 
     private ChessGame.TeamColor getTeamColor(String username, GameData gameData) {
         if (username.equals(gameData.blackUsername())) {
