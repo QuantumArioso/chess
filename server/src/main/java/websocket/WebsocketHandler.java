@@ -45,7 +45,7 @@ public class WebsocketHandler {
             }
 
             switch (command.getCommandType()) {
-                case CONNECT -> connect(session, username, command);
+                case CONNECT -> connect(session, username, command, teamColor);
                 case LEAVE -> leaveGame(session, username, (LeaveGameCommand) command);
                 case RESIGN -> resign(session, username, command, teamColor);
             }
@@ -59,13 +59,18 @@ public class WebsocketHandler {
         }
     }
 
-    private void connect(Session session, String username, UserGameCommand command) throws IOException {
+    private void connect(Session session, String username, UserGameCommand command, ChessGame.TeamColor teamColor) throws IOException {
         connections.add(username, session, command.getGameID());
         LoadGameMessage notification = new LoadGameMessage(command.getGameID());
         String notif = new Gson().toJson(notification);
         session.getRemote().sendString(notif);
 
-        String message = String.format("%s has joined the game", username);
+        String message;
+        if (teamColor == null) {
+            message = String.format("%s has joined the game as an observer", username);
+        } else {
+            message = String.format("%s has joined the game as the %s team", username, teamColor);
+        }
         var notification2 = new NotificationMessage(message);
         connections.broadcast(username, command.getGameID(), notification2);
     }

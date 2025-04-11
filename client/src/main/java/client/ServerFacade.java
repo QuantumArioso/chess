@@ -12,8 +12,6 @@ import java.util.Map;
 
 
 public class ServerFacade {
-    // has 7 methods--one for each request
-    // depends on ClientCommunicator for get and post
     int port;
     String url;
     WebsocketCommunicator websocketCommunicator;
@@ -79,6 +77,14 @@ public class ServerFacade {
                 """, playerColor, gameID);
         ClientCommunicator.doPut(url + "/game", data, authToken);
         websocketCommunicator.connect(authToken, (int) gameID);
+    }
+
+    public void observeGame(String authToken, double gameID) {
+        websocketCommunicator.connect(authToken, (int) gameID);
+    }
+
+    public void leaveGame(String authToken, double gameID) {
+        websocketCommunicator.leave(authToken, (int) gameID);
     }
 
     public void clear() throws IOException {

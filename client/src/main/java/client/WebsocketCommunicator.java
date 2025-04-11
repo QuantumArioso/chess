@@ -5,6 +5,7 @@ import exceptions.BadRequestException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import websocket.commands.UserGameCommand;
+import websocket.messages.LoadGameMessage;
 import websocket.messages.NotificationMessage;
 
 
@@ -32,6 +33,11 @@ public class WebsocketCommunicator extends Endpoint {
             this.session.addMessageHandler(new MessageHandler.Whole<String>() {
                 @Override
                 public void onMessage(String message) {
+                    if (message.contains("LOAD_GAME")) {
+                        LoadGameMessage loadGame = new Gson().fromJson(message, LoadGameMessage.class);
+                        notificationHandler.notify(loadGame);
+                    }
+
                     NotificationMessage notification = new Gson().fromJson(message, NotificationMessage.class);
                     notificationHandler.notify(notification);
                 }
@@ -50,6 +56,16 @@ public class WebsocketCommunicator extends Endpoint {
     public void connect(String authToken, int gameID) {
         try {
             var action = new UserGameCommand(UserGameCommand.CommandType.CONNECT, authToken, gameID);
+            this.session.getBasicRemote().sendText(new Gson().toJson(action));
+        } catch (IOException ex) {
+            log.error(ex.getMessage());
+            throw new BadRequestException();
+        }
+    }
+
+    public void leave(String authToken, int gameID) {
+        try {
+            var action = new UserGameCommand(UserGameCommand.CommandType.LEAVE, authToken, gameID);
             this.session.getBasicRemote().sendText(new Gson().toJson(action));
         } catch (IOException ex) {
             log.error(ex.getMessage());

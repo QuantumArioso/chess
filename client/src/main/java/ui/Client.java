@@ -9,6 +9,8 @@ import exceptions.BadRequestException;
 import exceptions.UnauthorizedException;
 import exceptions.UnavailableException;
 import model.GameData;
+import websocket.messages.ErrorMessage;
+import websocket.messages.LoadGameMessage;
 import websocket.messages.NotificationMessage;
 import websocket.messages.ServerMessage;
 
@@ -17,7 +19,7 @@ import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
-import static ui.EscapeSequences.SET_TEXT_COLOR_RED;
+import static ui.EscapeSequences.*;
 
 public class Client implements ServerMessageObserver {
     static ServerFacade facade = new ServerFacade(8080);
@@ -83,7 +85,8 @@ public class Client implements ServerMessageObserver {
         }
     }
 
-    private static void gameplayLoop(PrintStream out, Scanner scanner, ChessGame game, ChessGame.TeamColor teamColor) {
+    private static void gameplayLoop(PrintStream out, Scanner scanner, ChessGame game, ChessGame.TeamColor teamColor,
+                                     String authToken, int gameID) {
         boolean leave = false;
         while (!leave) {
             int choice = gameplayHelpMessage(out, scanner);
@@ -102,6 +105,7 @@ public class Client implements ServerMessageObserver {
                     break;
                 case 5:
                     leave = true;
+                    facade.leaveGame(authToken, gameID);
                     break;
                 case 6:
                     resignFromGame();
@@ -352,13 +356,14 @@ public class Client implements ServerMessageObserver {
             }
 
             getGameIds(gameIDs, games);
-            if (!gameIDs.contains(Integer.parseInt(input[0]))) {
+            int gameID = Integer.parseInt(input[0]);
+            if (!gameIDs.contains(gameID)) {
                 out.printf("Please enter a number between 1 and %d to join a game, or create a new game " +
                         "for more options.\n", gameIDs.size());
                 return;
             }
             facade.joinGame(authToken, Double.parseDouble(input[0]), uppercaseTeamColor);
-            int index = (Integer.parseInt(input[0])) - 1;
+            int index = (gameID) - 1;
             GameData gameData = games.get(index);
             out.println("You have joined the game!");
             callDrawChessBoard(uppercaseTeamColor.equals("WHITE"), gameData.game(), null);
@@ -368,7 +373,7 @@ public class Client implements ServerMessageObserver {
             } else {
                 teamColor = ChessGame.TeamColor.BLACK;
             }
-            gameplayLoop(out, scanner, gameData.game(), teamColor);
+            gameplayLoop(out, scanner, gameData.game(), teamColor, authToken, gameID);
         } catch (UnavailableException e) {
             out.println("That color is already taken. Please try the other color or join as an observer.");
         } catch (IOException e) {
@@ -403,16 +408,18 @@ public class Client implements ServerMessageObserver {
                 out.println("There are no games to observe.");
                 return;
             }
+            int gameID = Integer.parseInt(input);
             ArrayList<Integer> gameIDs = new ArrayList<>();
             getGameIds(gameIDs, games);
-            if (!gameIDs.contains(Integer.parseInt(input))) {
+            if (!gameIDs.contains(gameID)) {
                 out.printf("Please enter a number between 1 and %d to observe a game.\n", gameIDs.size());
                 return;
             }
             int index = (Integer.parseInt(input)) - 1;
             GameData gameData = games.get(index);
+            facade.observeGame(authToken, gameID);
             callDrawChessBoard(true, gameData.game(), null);
-            gameplayLoop(out, scanner, gameData.game(), ChessGame.TeamColor.WHITE);
+            gameplayLoop(out, scanner, gameData.game(), ChessGame.TeamColor.WHITE, authToken, gameID);
         } catch (IOException e) {
             out.println("Something went wrong. Please try again");
         }
@@ -426,7 +433,26 @@ public class Client implements ServerMessageObserver {
     }
 
     @Override
-    public void notify(NotificationMessage notification) {
-        System.out.println(SET_TEXT_COLOR_RED + notification.getMessage());
+    public void notify(ServerMessage message) {
+        if(message.getServerMessageType().equals(ServerMessage.ServerMessageType.NOTIFICATION)) {
+            notificationMessageReceived((NotificationMessage) message);
+        } else if (message.getServerMessageType().equals(ServerMessage.ServerMessageType.LOAD_GAME)) {
+            loadGameMessageReceived((LoadGameMessage) message);
+        } else if (message.getServerMessageType().equals(ServerMessage.ServerMessageType.ERROR)) {
+            errorMessageReceived((ErrorMessage) message);
+        }
+    }
+
+    public void notificationMessageReceived(NotificationMessage notification) {
+        System.out.println(SET_TEXT_COLOR_YELLOW + notification.getMessage());
+        System.out.println(RESET_TEXT_COLOR);
+    }
+
+    public void loadGameMessageReceived(LoadGameMessage load) {
+
+    }
+
+    public void errorMessageReceived(ErrorMessage error) {
+
     }
 }
