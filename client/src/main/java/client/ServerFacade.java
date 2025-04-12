@@ -1,6 +1,7 @@
 package client;
 
 import chess.ChessGame;
+import chess.ChessMove;
 import com.google.gson.Gson;
 import handler.GameListResult;
 import model.GameData;
@@ -83,8 +84,12 @@ public class ServerFacade {
         websocketCommunicator.connect(authToken, (int) gameID);
     }
 
-    public void leaveGame(String authToken, double gameID) {
-        websocketCommunicator.leave(authToken, (int) gameID);
+    public void makeMove(String authToken, double gameID, ChessMove move) {
+        websocketCommunicator.move(authToken, (int) gameID, move);
+    }
+
+    public void leaveGame(String authToken, double gameID, ChessGame.TeamColor teamColor) {
+        websocketCommunicator.leave(authToken, (int) gameID, teamColor);
     }
 
     public void clear() throws IOException {

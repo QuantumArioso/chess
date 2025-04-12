@@ -1,12 +1,18 @@
 package client;
 
+import chess.ChessGame;
+import chess.ChessMove;
 import com.google.gson.Gson;
 import exceptions.BadRequestException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import websocket.commands.LeaveGameCommand;
+import websocket.commands.MakeMoveCommand;
 import websocket.commands.UserGameCommand;
+import websocket.messages.ErrorMessage;
 import websocket.messages.LoadGameMessage;
 import websocket.messages.NotificationMessage;
+import websocket.messages.ServerMessage;
 
 
 import javax.websocket.*;
@@ -36,10 +42,16 @@ public class WebsocketCommunicator extends Endpoint {
                     if (message.contains("LOAD_GAME")) {
                         LoadGameMessage loadGame = new Gson().fromJson(message, LoadGameMessage.class);
                         notificationHandler.notify(loadGame);
+                    } else if (message.contains("ERROR")) {
+                        ErrorMessage error = new Gson().fromJson(message, ErrorMessage.class);
+                        notificationHandler.notify(error);
+                    } else if (message.contains("NOTIFICATION")) {
+                        NotificationMessage notification = new Gson().fromJson(message, NotificationMessage.class);
+                        notificationHandler.notify(notification);
+                    } else {
+                        ServerMessage notification = new Gson().fromJson(message, ServerMessage.class);
+                        notificationHandler.notify(notification);
                     }
-
-                    NotificationMessage notification = new Gson().fromJson(message, NotificationMessage.class);
-                    notificationHandler.notify(notification);
                 }
             });
         } catch (DeploymentException | IOException | URISyntaxException ex) {
@@ -63,9 +75,19 @@ public class WebsocketCommunicator extends Endpoint {
         }
     }
 
-    public void leave(String authToken, int gameID) {
+    public void move(String authToken, int gameID, ChessMove move) {
         try {
-            var action = new UserGameCommand(UserGameCommand.CommandType.LEAVE, authToken, gameID);
+            var action = new MakeMoveCommand(authToken, gameID, move);
+            this.session.getBasicRemote().sendText(new Gson().toJson(action));
+        } catch (IOException ex) {
+            log.error(ex.getMessage());
+            throw new BadRequestException();
+        }
+    }
+
+    public void leave(String authToken, int gameID, ChessGame.TeamColor teamColor) {
+        try {
+            var action = new LeaveGameCommand(authToken, gameID, teamColor);
             this.session.getBasicRemote().sendText(new Gson().toJson(action));
         } catch (IOException ex) {
             log.error(ex.getMessage());
