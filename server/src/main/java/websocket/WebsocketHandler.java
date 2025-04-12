@@ -61,7 +61,14 @@ public class WebsocketHandler {
 
     private void connect(Session session, String username, UserGameCommand command, ChessGame.TeamColor teamColor) throws IOException {
         connections.add(username, session, command.getGameID());
-        LoadGameMessage notification = new LoadGameMessage(command.getGameID());
+        ChessGame game = sqlGameDAO.getGameData(command.getGameID()).game();
+
+        LoadGameMessage notification;
+        if (teamColor != null && teamColor.equals(ChessGame.TeamColor.BLACK)) {
+            notification = new LoadGameMessage(game, false);
+        } else {
+            notification = new LoadGameMessage(game, true);
+        }
         String notif = new Gson().toJson(notification);
         session.getRemote().sendString(notif);
 
@@ -94,8 +101,20 @@ public class WebsocketHandler {
             if (teamColor.equals(game.getBoard().getPiece(move.getStartPosition()).getTeamColor())) {
                 game.makeMove(move);
                 sqlGameDAO.updateChessGame(new Gson().toJson(game), gameData.gameID());
-                LoadGameMessage notification = new LoadGameMessage(command.getGameID());
-                connections.broadcast("", command.getGameID(), notification);
+
+                if (teamColor.equals(ChessGame.TeamColor.BLACK)) {
+                    session.getRemote().sendString(new Gson().toJson(new LoadGameMessage(game, false)));
+                    LoadGameMessage notification = new LoadGameMessage(game, true);
+                    connections.broadcast(username, command.getGameID(), notification);
+                } else {
+                    String blackUsername = gameData.blackUsername();
+                    LoadGameMessage notification = new LoadGameMessage(game, false);
+                    connections.send(blackUsername, gameData.gameID(), notification);
+                    notification = new LoadGameMessage(game, true);
+                    connections.broadcast(blackUsername, command.getGameID(), notification);
+                }
+
+
             } else {
                 String message = "Error: You cannot move that piece";
                 session.getRemote().sendString(new Gson().toJson(new ErrorMessage(message)));

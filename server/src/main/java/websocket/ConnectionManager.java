@@ -45,4 +45,14 @@ public class ConnectionManager {
             connections.remove(connection);
         }
     }
+
+    public void send(String username, Integer gameID, ServerMessage notification) throws IOException {
+        for (Connection connection : connections.keySet()) {
+            if (connection.session.isOpen()) {
+                if (Objects.equals(connections.get(connection), gameID) && connection.visitorName.equals(username)) {
+                    connection.send(new Gson().toJson(notification));
+                }
+            }
+        }
+    }
 }

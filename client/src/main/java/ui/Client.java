@@ -94,7 +94,8 @@ public class Client implements ServerMessageObserver {
                 case 1:
                     break;
                 case 2:
-                    callDrawChessBoard(teamColor.equals(ChessGame.TeamColor.WHITE), game, null);
+                    boolean needToFlip = teamColor == null || teamColor.equals(ChessGame.TeamColor.WHITE);
+                    redrawChessBoard(needToFlip, game, null, game.getBoard());
                     break;
                 case 3:
                     makeMove();
@@ -177,7 +178,8 @@ public class Client implements ServerMessageObserver {
             out.println("There is not a piece at that location");
             return;
         }
-        callDrawChessBoard(teamColor.equals(ChessGame.TeamColor.WHITE), game, pos);
+        boolean needToFlip = teamColor == null || teamColor.equals(ChessGame.TeamColor.WHITE);
+        redrawChessBoard(needToFlip, game, pos, game.getBoard());
     }
 
     private static void resignFromGame() {
@@ -366,7 +368,7 @@ public class Client implements ServerMessageObserver {
             int index = (gameID) - 1;
             GameData gameData = games.get(index);
             out.println("You have joined the game!");
-            callDrawChessBoard(uppercaseTeamColor.equals("WHITE"), gameData.game(), null);
+            initialDrawChessBoard(uppercaseTeamColor.equals("WHITE"), gameData.game(), null);
             ChessGame.TeamColor teamColor;
             if (uppercaseTeamColor.equals("WHITE")) {
                 teamColor = ChessGame.TeamColor.WHITE;
@@ -418,17 +420,22 @@ public class Client implements ServerMessageObserver {
             int index = (Integer.parseInt(input)) - 1;
             GameData gameData = games.get(index);
             facade.observeGame(authToken, gameID);
-            callDrawChessBoard(true, gameData.game(), null);
-            gameplayLoop(out, scanner, gameData.game(), ChessGame.TeamColor.WHITE, authToken, gameID);
+            initialDrawChessBoard(true, gameData.game(), null);
+            gameplayLoop(out, scanner, gameData.game(), null, authToken, gameID);
         } catch (IOException e) {
             out.println("Something went wrong. Please try again");
         }
 
     }
 
-    private static void callDrawChessBoard(boolean needToFlip, ChessGame game, ChessPosition pos) {
+    private static void initialDrawChessBoard(boolean needToFlip, ChessGame game, ChessPosition pos) {
         ChessBoard board = game.getBoard();
         board.resetBoard();
+        DrawChessBoard.drawBoard(game, needToFlip, pos);
+    }
+
+    private static void redrawChessBoard(boolean needToFlip, ChessGame game, ChessPosition pos, ChessBoard newBoard) {
+        game.setBoard(newBoard);
         DrawChessBoard.drawBoard(game, needToFlip, pos);
     }
 
@@ -449,7 +456,8 @@ public class Client implements ServerMessageObserver {
     }
 
     public void loadGameMessageReceived(LoadGameMessage load) {
-
+        ChessGame game = load.getGame();
+        redrawChessBoard(//how do I know who I'm displaying it for...);
     }
 
     public void errorMessageReceived(ErrorMessage error) {
