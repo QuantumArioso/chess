@@ -87,13 +87,13 @@ public class WebsocketHandler {
         ChessGame game = sqlGameDAO.getGameData(command.getGameID()).game();
         ChessGame.TeamColor teamColor = getTeamColor(username, gameData);
         ChessGame.TeamColor teamTurn = game.getTeamTurn();
-        if (!teamTurn.equals(teamColor)) {
-            String message = "Error: It is not your turn. You cannot make a move";
+        if (game.getGameOver()) {
+            String message = "Error: The game is over. You cannot make a move";
             session.getRemote().sendString(new Gson().toJson(new ErrorMessage(message)));
             return;
         }
-        if (game.getGameOver()) {
-            String message = "Error: The game is over. You cannot make a move";
+        if (!teamTurn.equals(teamColor)) {
+            String message = "Error: It is not your turn. You cannot make a move";
             session.getRemote().sendString(new Gson().toJson(new ErrorMessage(message)));
             return;
         }

@@ -109,7 +109,7 @@ public class Client implements ServerMessageObserver {
                     facade.leaveGame(authToken, gameID, teamColor);
                     break;
                 case 6:
-                    resignFromGame();
+                    resignFromGame(out, scanner, authToken, gameID);
                     //TODO: implement this function
                     break;
                 default:
@@ -154,6 +154,17 @@ public class Client implements ServerMessageObserver {
             // TODO: promotion piece
         }
     }
+
+    private static void resignFromGame(PrintStream out, Scanner scanner, String authToken, int gameID) {
+        out.println("""
+                Are you sure you want to forfeit the game? Enter "y" to proceed, anything else to go back:"
+                """);
+        String input = scanner.nextLine();
+        if (input.equals("y")) {
+            facade.forfeitGame(authToken, gameID);
+        }
+    }
+
 
     private static void highlightLegalMoves(PrintStream out, Scanner scanner, ChessGame game,
                                             ChessGame.TeamColor teamColor) {
@@ -201,10 +212,6 @@ public class Client implements ServerMessageObserver {
 //            return null;
 //        }
         return pos;
-    }
-
-    private static void resignFromGame() {
-
     }
 
     private static int preLoginHelpMessage(PrintStream out, Scanner scanner) {

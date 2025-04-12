@@ -92,6 +92,10 @@ public class ServerFacade {
         websocketCommunicator.leave(authToken, (int) gameID, teamColor);
     }
 
+    public void forfeitGame(String authToken, int gameID) {
+        websocketCommunicator.resign(authToken, gameID);
+    }
+
     public void clear() throws IOException {
         ClientCommunicator.doDelete(url + "/db", "");
     }

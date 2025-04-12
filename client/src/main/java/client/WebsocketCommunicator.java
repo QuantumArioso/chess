@@ -94,4 +94,14 @@ public class WebsocketCommunicator extends Endpoint {
             throw new BadRequestException();
         }
     }
+
+    public void resign(String authToken, int gameID) {
+        try {
+            var action = new UserGameCommand(UserGameCommand.CommandType.RESIGN, authToken, gameID);
+            this.session.getBasicRemote().sendText(new Gson().toJson(action));
+        } catch (IOException ex) {
+            log.error(ex.getMessage());
+            throw new BadRequestException();
+        }
+    }
 }
