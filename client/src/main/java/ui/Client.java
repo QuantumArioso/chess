@@ -1,9 +1,6 @@
 package ui;
 
-import chess.ChessBoard;
-import chess.ChessGame;
-import chess.ChessMove;
-import chess.ChessPosition;
+import chess.*;
 import client.ServerFacade;
 import client.ServerMessageObserver;
 import exceptions.BadRequestException;
@@ -20,6 +17,7 @@ import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
+import static java.lang.Math.abs;
 import static ui.EscapeSequences.*;
 
 public class Client implements ServerMessageObserver {
@@ -86,10 +84,17 @@ public class Client implements ServerMessageObserver {
         }
     }
 
-    private static void gameplayLoop(PrintStream out, Scanner scanner, ChessGame game, ChessGame.TeamColor teamColor,
-                                     String authToken, int gameID) {
+    private void gameplayLoop(PrintStream out, Scanner scanner, ChessGame.TeamColor teamColor,
+                                     String authToken, int gameID) throws IOException {
+        ChessGame game = null;
         boolean leave = false;
         while (!leave) {
+            ArrayList<GameData> allGameData = facade.listGames(authToken);
+            for (GameData gameData : allGameData) {
+                if (gameData.gameID() == gameID) {
+                    game = gameData.game();
+                }
+            }
             int choice = gameplayHelpMessage(out, scanner);
             switch (choice) {
                 case 1:
@@ -99,10 +104,10 @@ public class Client implements ServerMessageObserver {
                     redrawChessBoard(needToFlip, game, null, game.getBoard());
                     break;
                 case 3:
-                    makeMove(out, scanner, game, authToken, gameID);
+                    makeMove(out, scanner, game, authToken, gameID, teamColor);
                     break;
                 case 4:
-                    highlightLegalMoves(out, scanner, game, teamColor);
+                    highlightLegalMoves(out, scanner, game, teamColor, authToken, gameID);
                     break;
                 case 5:
                     leave = true;
@@ -110,7 +115,6 @@ public class Client implements ServerMessageObserver {
                     break;
                 case 6:
                     resignFromGame(out, scanner, authToken, gameID);
-                    //TODO: implement this function
                     break;
                 default:
                     out.println("Please enter a number between 1 and 6");
@@ -118,7 +122,7 @@ public class Client implements ServerMessageObserver {
         }
     }
 
-    private static int gameplayHelpMessage(PrintStream out, Scanner scanner) {
+    private int gameplayHelpMessage(PrintStream out, Scanner scanner) {
         out.println("""
                 Enter the number next to the option you wish to select:
                 1. Help
@@ -138,48 +142,68 @@ public class Client implements ServerMessageObserver {
         return choice;
     }
 
-    private static void makeMove(PrintStream out, Scanner scanner, ChessGame game, String authToken, int gameID) {
+    private void makeMove(PrintStream out, Scanner scanner, ChessGame game, String authToken, int gameID,
+                          ChessGame.TeamColor teamColor) throws IOException {
+        boolean needToFlip = teamColor == null || teamColor.equals(ChessGame.TeamColor.WHITE);
         out.println("""
                 Please enter the coordinates of the piece you want to move in this format: e5
                 """);
         String input1 = scanner.nextLine();
+        ChessPosition startPos = validateCoordinate(out, input1, game, true, authToken, gameID, needToFlip);
         out.println("""
                 Please enter the coordinates of the position you want to move to in this format: e5
                 """);
-        String input2 = scanner.nextLine();
-        ChessPosition startPos = validateCoordinate(out, input1, game);
-        ChessPosition endPos = validateCoordinate(out, input2, game);
-        if (startPos != null && endPos != null) {
-            facade.makeMove(authToken, gameID, new ChessMove(startPos, endPos, null));
-            // TODO: promotion piece
+        String input2 = scanner.nextLine().strip();
+        ChessPosition endPos = validateCoordinate(out, input2, game, false, authToken, gameID, needToFlip);
+        if ((startPos != null) && (endPos != null)) {
+            ChessPiece.PieceType promotionPiece = null;
+            if ((game.getBoard().getPiece(startPos).getPieceType().equals(ChessPiece.PieceType.PAWN))
+                    && (endPos.getRow() == 1 || endPos.getRow() == 8)) {
+                out.println("""
+                        Please enter the letter of the piece you want to promote your pawn to:
+                        Q: Queen
+                        R: Rook
+                        B: Bishop
+                        N: Knight
+                        """);
+                boolean loop = true;
+                while (loop) {
+                    String input3 = scanner.nextLine().strip().toUpperCase();
+                    switch (input3) {
+                        case "Q":
+                            promotionPiece = ChessPiece.PieceType.QUEEN;
+                            loop = false;
+                            break;
+                        case "R":
+                            promotionPiece = ChessPiece.PieceType.ROOK;
+                            loop = false;
+                            break;
+                        case "B":
+                            promotionPiece = ChessPiece.PieceType.BISHOP;
+                            loop = false;
+                            break;
+                        case "N":
+                            promotionPiece = ChessPiece.PieceType.KNIGHT;
+                            loop = false;
+                            break;
+                        default:
+                            out.println("That is not a valid piece. Please try again.");
+                    }
+                }
+
+            }
+            facade.makeMove(authToken, gameID, new ChessMove(startPos, endPos, promotionPiece));
         }
     }
 
-    private static void resignFromGame(PrintStream out, Scanner scanner, String authToken, int gameID) {
-        out.println("""
-                Are you sure you want to forfeit the game? Enter "y" to proceed, anything else to go back:"
-                """);
-        String input = scanner.nextLine();
-        if (input.equals("y")) {
-            facade.forfeitGame(authToken, gameID);
+    private ChessPosition validateCoordinate(PrintStream out, String input, ChessGame game, boolean start,
+                                             String authToken, int gameID, boolean needToFlip) throws IOException {
+        ArrayList<GameData> allGameData = facade.listGames(authToken);
+        for (GameData gameData : allGameData) {
+            if (gameData.gameID() == gameID) {
+                game = gameData.game();
+            }
         }
-    }
-
-
-    private static void highlightLegalMoves(PrintStream out, Scanner scanner, ChessGame game,
-                                            ChessGame.TeamColor teamColor) {
-        out.println("""
-                Please enter the coordinates of the piece who's moves you'd like to see in this format: e5
-                """);
-        String input = scanner.nextLine();
-        ChessPosition pos = validateCoordinate(out, input, game);
-        if (pos != null) {
-            boolean needToFlip = teamColor == null || teamColor.equals(ChessGame.TeamColor.WHITE);
-            redrawChessBoard(needToFlip, game, pos, game.getBoard());
-        }
-    }
-
-    private static ChessPosition validateCoordinate(PrintStream out, String input, ChessGame game) {
         String[] inputs = input.split("");
 
         Map<String, Integer> coordinates = new HashMap<>();
@@ -206,15 +230,45 @@ public class Client implements ServerMessageObserver {
             return null;
         }
         int col = coordinates.get(inputs[0]);
-        ChessPosition pos = new ChessPosition(row, col);
-//        if (game.getBoard().getPiece(pos) == null) {
-//            out.println("There is not a piece at that location");
-//            return null;
+//        if (needToFlip) {
+//            row = abs(9-row);
+//            col = abs(9-col);
 //        }
+        ChessPosition pos = new ChessPosition(row, col);
+        ChessBoard board = game.getBoard();
+        ChessPiece piece = board.getPiece(new ChessPosition(1, 1));
+        if (start && game.getBoard().getPiece(pos) == null) {
+            out.println("There is not a piece at that location");
+            return null;
+        }
         return pos;
     }
 
-    private static int preLoginHelpMessage(PrintStream out, Scanner scanner) {
+    private void resignFromGame(PrintStream out, Scanner scanner, String authToken, int gameID) {
+        out.println("""
+                Are you sure you want to forfeit the game? Enter "y" to proceed, anything else to go back:"
+                """);
+        String input = scanner.nextLine();
+        if (input.equals("y")) {
+            facade.forfeitGame(authToken, gameID);
+        }
+    }
+
+
+    private void highlightLegalMoves(PrintStream out, Scanner scanner, ChessGame game,
+                                            ChessGame.TeamColor teamColor, String authToken, int gameID) throws IOException {
+        boolean needToFlip = teamColor == null || teamColor.equals(ChessGame.TeamColor.WHITE);
+        out.println("""
+                Please enter the coordinates of the piece who's moves you'd like to see in this format: e5
+                """);
+        String input = scanner.nextLine();
+        ChessPosition pos = validateCoordinate(out, input, game, true, authToken, gameID, needToFlip);
+        if (pos != null) {
+            redrawChessBoard(needToFlip, game, pos, game.getBoard());
+        }
+    }
+
+    private int preLoginHelpMessage(PrintStream out, Scanner scanner) {
         out.println("""
                 Enter the number next to the option you wish to select:
                 1. Help
@@ -232,7 +286,7 @@ public class Client implements ServerMessageObserver {
         return choice;
     }
 
-    private static void register(PrintStream out, Scanner scanner) {
+    private void register(PrintStream out, Scanner scanner) {
         out.println("""
                 Hail, new combatant! Please enter registration information in this format:
                     username password email
@@ -252,7 +306,7 @@ public class Client implements ServerMessageObserver {
         }
     }
 
-    private static String login(PrintStream out, Scanner scanner) {
+    private String login(PrintStream out, Scanner scanner) {
         out.println("""
                 I am overjoyed to see you again! First, let me make sure your papers are in order.
                 Please enter login information in this format:
@@ -274,12 +328,12 @@ public class Client implements ServerMessageObserver {
         }
     }
 
-    private static void exit(PrintStream out) {
+    private void exit(PrintStream out) {
         out.println("I bid thee farewell. Safe travels!");
         System.exit(0);
     }
 
-    private static int postLoginHelpMessage(PrintStream out, Scanner scanner) {
+    private int postLoginHelpMessage(PrintStream out, Scanner scanner) {
         out.println("""
                 Enter the number next to the option you wish to select:
                 1. Help
@@ -299,7 +353,7 @@ public class Client implements ServerMessageObserver {
         }
         return choice;
     }
-    private static String logout(PrintStream out, String authToken) {
+    private String logout(PrintStream out, String authToken) {
         out.println("""
                 See you later!
                 """);
@@ -312,7 +366,7 @@ public class Client implements ServerMessageObserver {
         }
     }
 
-    private static void createGame(PrintStream out, Scanner scanner, String authToken) {
+    private void createGame(PrintStream out, Scanner scanner, String authToken) {
         out.println("""
                 Create a new game of chess! Please enter a game name:
                 """);
@@ -325,7 +379,7 @@ public class Client implements ServerMessageObserver {
         }
     }
 
-    private static void listGames(PrintStream out, String authToken) {
+    private void listGames(PrintStream out, String authToken) {
         out.println("""
                 These are all the existing games:
                 """);
@@ -353,7 +407,7 @@ public class Client implements ServerMessageObserver {
         }
     }
 
-    private static void joinGame(PrintStream out, Scanner scanner, String authToken) {
+    private void joinGame(PrintStream out, Scanner scanner, String authToken) {
         out.println("""
                 Enter the game number you wish to join, as well as which team you want to join as (white or black).
                 Please enter information in this format:
@@ -402,7 +456,7 @@ public class Client implements ServerMessageObserver {
             } else {
                 teamColor = ChessGame.TeamColor.BLACK;
             }
-            gameplayLoop(out, scanner, gameData.game(), teamColor, authToken, gameID);
+            gameplayLoop(out, scanner, teamColor, authToken, gameID);
         } catch (UnavailableException e) {
             out.println("That color is already taken. Please try the other color or join as an observer.");
         } catch (IOException e) {
@@ -410,15 +464,14 @@ public class Client implements ServerMessageObserver {
         }
     }
 
-    private static void getGameIds(ArrayList<Integer> gameIDs, ArrayList<GameData> list) {
-        for (int i = 0; i < list.size(); i++) {
-            GameData gameData = list.get(i);
+    private void getGameIds(ArrayList<Integer> gameIDs, ArrayList<GameData> list) {
+        for (GameData gameData : list) {
             int gameID = gameData.gameID();
             gameIDs.add(gameID);
         }
     }
 
-    private static void observeGame(PrintStream out, Scanner scanner, String authToken) {
+    private void observeGame(PrintStream out, Scanner scanner, String authToken) {
         out.println("""
                 Enter the game number you wish to observe:
                 """);
@@ -447,14 +500,14 @@ public class Client implements ServerMessageObserver {
             int index = (Integer.parseInt(input)) - 1;
             GameData gameData = games.get(index);
             facade.observeGame(authToken, gameID);
-            gameplayLoop(out, scanner, gameData.game(), null, authToken, gameID);
+            gameplayLoop(out, scanner, null, authToken, gameID);
         } catch (IOException e) {
             out.println("Something went wrong. Please try again");
         }
 
     }
 
-    private static void redrawChessBoard(boolean needToFlip, ChessGame game, ChessPosition pos, ChessBoard newBoard) {
+    private void redrawChessBoard(boolean needToFlip, ChessGame game, ChessPosition pos, ChessBoard newBoard) {
         game.setBoard(newBoard);
         DrawChessBoard.drawBoard(game, needToFlip, pos);
     }
