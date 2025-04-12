@@ -21,7 +21,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 public class WebsocketCommunicator extends Endpoint {
-    private static final Logger log = LoggerFactory.getLogger(WebsocketCommunicator.class);
     Session session;
     ServerMessageObserver serverMessageObserver;
 
@@ -55,7 +54,6 @@ public class WebsocketCommunicator extends Endpoint {
                 }
             });
         } catch (DeploymentException | IOException | URISyntaxException ex) {
-            log.error(String.valueOf(ex));
             throw new BadRequestException();
         }
     }
@@ -70,7 +68,6 @@ public class WebsocketCommunicator extends Endpoint {
             var action = new UserGameCommand(UserGameCommand.CommandType.CONNECT, authToken, gameID);
             this.session.getBasicRemote().sendText(new Gson().toJson(action));
         } catch (IOException ex) {
-            log.error(ex.getMessage());
             throw new BadRequestException();
         }
     }
@@ -80,7 +77,6 @@ public class WebsocketCommunicator extends Endpoint {
             var action = new MakeMoveCommand(authToken, gameID, move);
             this.session.getBasicRemote().sendText(new Gson().toJson(action));
         } catch (IOException ex) {
-            log.error(ex.getMessage());
             throw new BadRequestException();
         }
     }
@@ -90,7 +86,6 @@ public class WebsocketCommunicator extends Endpoint {
             var action = new LeaveGameCommand(authToken, gameID, teamColor);
             this.session.getBasicRemote().sendText(new Gson().toJson(action));
         } catch (IOException ex) {
-            log.error(ex.getMessage());
             throw new BadRequestException();
         }
     }
@@ -100,7 +95,6 @@ public class WebsocketCommunicator extends Endpoint {
             var action = new UserGameCommand(UserGameCommand.CommandType.RESIGN, authToken, gameID);
             this.session.getBasicRemote().sendText(new Gson().toJson(action));
         } catch (IOException ex) {
-            log.error(ex.getMessage());
             throw new BadRequestException();
         }
     }

@@ -17,7 +17,6 @@ import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
-import static java.lang.Math.abs;
 import static ui.EscapeSequences.*;
 
 public class Client implements ServerMessageObserver {
@@ -144,17 +143,16 @@ public class Client implements ServerMessageObserver {
 
     private void makeMove(PrintStream out, Scanner scanner, ChessGame game, String authToken, int gameID,
                           ChessGame.TeamColor teamColor) throws IOException {
-        boolean needToFlip = teamColor == null || teamColor.equals(ChessGame.TeamColor.WHITE);
         out.println("""
                 Please enter the coordinates of the piece you want to move in this format: e5
                 """);
         String input1 = scanner.nextLine();
-        ChessPosition startPos = validateCoordinate(out, input1, game, true, authToken, gameID, needToFlip);
+        ChessPosition startPos = validateCoordinate(out, input1, game, true, authToken, gameID);
         out.println("""
                 Please enter the coordinates of the position you want to move to in this format: e5
                 """);
         String input2 = scanner.nextLine().strip();
-        ChessPosition endPos = validateCoordinate(out, input2, game, false, authToken, gameID, needToFlip);
+        ChessPosition endPos = validateCoordinate(out, input2, game, false, authToken, gameID);
         if ((startPos != null) && (endPos != null)) {
             ArrayList<GameData> allGameData = facade.listGames(authToken);
             for (GameData gameData : allGameData) {
@@ -203,7 +201,7 @@ public class Client implements ServerMessageObserver {
     }
 
     private ChessPosition validateCoordinate(PrintStream out, String input, ChessGame game, boolean start,
-                                             String authToken, int gameID, boolean needToFlip) throws IOException {
+                                             String authToken, int gameID) throws IOException {
         String[] inputs = input.split("");
 
         Map<String, Integer> coordinates = new HashMap<>();
@@ -230,10 +228,6 @@ public class Client implements ServerMessageObserver {
             return null;
         }
         int col = coordinates.get(inputs[0]);
-//        if (needToFlip) {
-//            row = abs(9-row);
-//            col = abs(9-col);
-//        }
         ChessPosition pos = new ChessPosition(row, col);
         ArrayList<GameData> allGameData = facade.listGames(authToken);
         for (GameData gameData : allGameData) {
@@ -241,8 +235,7 @@ public class Client implements ServerMessageObserver {
                 game = gameData.game();
             }
         }
-//        ChessBoard board = game.getBoard();
-//        ChessPiece piece = board.getPiece(new ChessPosition(1, 1));
+
         if (start && game.getBoard().getPiece(pos) == null) {
             out.println("There is not a piece at that location");
             return null;
@@ -274,7 +267,7 @@ public class Client implements ServerMessageObserver {
                 game = gameData.game();
             }
         }
-        ChessPosition pos = validateCoordinate(out, input, game, true, authToken, gameID, needToFlip);
+        ChessPosition pos = validateCoordinate(out, input, game, true, authToken, gameID);
         if (pos != null) {
             redrawChessBoard(needToFlip, game, pos, game.getBoard());
         }
