@@ -156,6 +156,12 @@ public class Client implements ServerMessageObserver {
         String input2 = scanner.nextLine().strip();
         ChessPosition endPos = validateCoordinate(out, input2, game, false, authToken, gameID, needToFlip);
         if ((startPos != null) && (endPos != null)) {
+            ArrayList<GameData> allGameData = facade.listGames(authToken);
+            for (GameData gameData : allGameData) {
+                if (gameData.gameID() == gameID) {
+                    game = gameData.game();
+                }
+            }
             ChessPiece.PieceType promotionPiece = null;
             if ((game.getBoard().getPiece(startPos).getPieceType().equals(ChessPiece.PieceType.PAWN))
                     && (endPos.getRow() == 1 || endPos.getRow() == 8)) {
@@ -198,12 +204,6 @@ public class Client implements ServerMessageObserver {
 
     private ChessPosition validateCoordinate(PrintStream out, String input, ChessGame game, boolean start,
                                              String authToken, int gameID, boolean needToFlip) throws IOException {
-        ArrayList<GameData> allGameData = facade.listGames(authToken);
-        for (GameData gameData : allGameData) {
-            if (gameData.gameID() == gameID) {
-                game = gameData.game();
-            }
-        }
         String[] inputs = input.split("");
 
         Map<String, Integer> coordinates = new HashMap<>();
@@ -235,8 +235,14 @@ public class Client implements ServerMessageObserver {
 //            col = abs(9-col);
 //        }
         ChessPosition pos = new ChessPosition(row, col);
-        ChessBoard board = game.getBoard();
-        ChessPiece piece = board.getPiece(new ChessPosition(1, 1));
+        ArrayList<GameData> allGameData = facade.listGames(authToken);
+        for (GameData gameData : allGameData) {
+            if (gameData.gameID() == gameID) {
+                game = gameData.game();
+            }
+        }
+//        ChessBoard board = game.getBoard();
+//        ChessPiece piece = board.getPiece(new ChessPosition(1, 1));
         if (start && game.getBoard().getPiece(pos) == null) {
             out.println("There is not a piece at that location");
             return null;
@@ -262,6 +268,12 @@ public class Client implements ServerMessageObserver {
                 Please enter the coordinates of the piece who's moves you'd like to see in this format: e5
                 """);
         String input = scanner.nextLine();
+        ArrayList<GameData> allGameData = facade.listGames(authToken);
+        for (GameData gameData : allGameData) {
+            if (gameData.gameID() == gameID) {
+                game = gameData.game();
+            }
+        }
         ChessPosition pos = validateCoordinate(out, input, game, true, authToken, gameID, needToFlip);
         if (pos != null) {
             redrawChessBoard(needToFlip, game, pos, game.getBoard());
