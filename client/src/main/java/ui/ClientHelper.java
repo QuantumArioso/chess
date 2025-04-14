@@ -37,6 +37,12 @@ public class ClientHelper {
                 case 1:
                     break;
                 case 2:
+                    allGameData = facade.listGames(authToken);
+                    for (GameData gameData : allGameData) {
+                        if (gameData.gameID() == gameID) {
+                            game = gameData.game();
+                        }
+                    }
                     boolean needToFlip = teamColor == null || teamColor.equals(ChessGame.TeamColor.WHITE);
                     redrawChessBoard(needToFlip, game, null, game.getBoard());
                     break;
