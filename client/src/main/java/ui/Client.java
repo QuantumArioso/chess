@@ -1,5 +1,4 @@
 package ui;
-
 import chess.*;
 import client.ServerFacade;
 import client.ServerMessageObserver;
@@ -11,12 +10,10 @@ import websocket.messages.ErrorMessage;
 import websocket.messages.LoadGameMessage;
 import websocket.messages.NotificationMessage;
 import websocket.messages.ServerMessage;
-
 import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-
 import static ui.EscapeSequences.*;
 
 public class Client implements ServerMessageObserver {
@@ -103,7 +100,7 @@ public class Client implements ServerMessageObserver {
                     redrawChessBoard(needToFlip, game, null, game.getBoard());
                     break;
                 case 3:
-                    makeMove(out, scanner, game, authToken, gameID, teamColor);
+                    makeMove(out, scanner, game, authToken, gameID);
                     break;
                 case 4:
                     highlightLegalMoves(out, scanner, game, teamColor, authToken, gameID);
@@ -141,8 +138,8 @@ public class Client implements ServerMessageObserver {
         return choice;
     }
 
-    private void makeMove(PrintStream out, Scanner scanner, ChessGame game, String authToken, int gameID,
-                          ChessGame.TeamColor teamColor) throws IOException {
+    private void makeMove(PrintStream out, Scanner scanner, ChessGame game, String authToken, int gameID)
+            throws IOException {
         out.println("""
                 Please enter the coordinates of the piece you want to move in this format: e5
                 """);

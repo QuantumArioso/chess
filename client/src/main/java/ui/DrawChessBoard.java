@@ -57,77 +57,59 @@ public class DrawChessBoard {
         if (flipInt == 0) {
             if (lighterFirst) {
                 for (int col = BOARD_WIDTH; col > 0; col--) {
-                    if (!moveLocs.isEmpty() && moveLocs.contains(new ChessPosition(row, col))) {
-                        if (col % 2 != 0) {
-                            setGreen(out);
-                        } else {
-                            setDarkGreen(out);
-                        }
-                    } else {
-                        if (col % 2 != 0) {
-                            setBlue(out);
-                        } else {
-                            setMagenta(out);
-                        }
-                    }
-                    printPlayer(out, mapPiece(out, board, new ChessPosition(row, col)));
+                    drawHighlightColorsBlueFirst(out, board, row, moveLocs, col);
                 }
             } else {
                 for (int col = BOARD_WIDTH; col > 0; col--) {
-                    if (!moveLocs.isEmpty() && moveLocs.contains(new ChessPosition(row, col))) {
-                        if (col % 2 != 0) {
-                            setDarkGreen(out);
-                        } else {
-                            setGreen(out);
-                        }
-                    } else {
-                        if (col % 2 != 0) {
-                            setMagenta(out);
-                        } else {
-                            setBlue(out);
-                        }
-                    }
-                    printPlayer(out, mapPiece(out, board, new ChessPosition(row, col)));
+                    drawHighlightColorsMagentaFirst(out, board, row, moveLocs, col);
                 }
             }
         } else {
             if (lighterFirst) {
                 for (int col = 1; col <= BOARD_WIDTH; col++) {
-                    if (!moveLocs.isEmpty() && moveLocs.contains(new ChessPosition(row, col))) {
-                        if (col % 2 != 0) {
-                            setGreen(out);
-                        } else {
-                            setDarkGreen(out);
-                        }
-                    } else {
-                        if (col % 2 != 0) {
-                            setBlue(out);
-                        } else {
-                            setMagenta(out);
-                        }
-                    }
-                    printPlayer(out, mapPiece(out, board, new ChessPosition(row, col)));
+                    drawHighlightColorsBlueFirst(out, board, row, moveLocs, col);
                 }
             } else {
                 for (int col = 1; col <= BOARD_WIDTH; col++) {
-                    if (!moveLocs.isEmpty() && moveLocs.contains(new ChessPosition(row, col))) {
-                        if (col % 2 != 0) {
-                            setDarkGreen(out);
-                        } else {
-                            setGreen(out);
-                        }
-                    } else {
-                        if (col % 2 != 0) {
-                            setMagenta(out);
-                        } else {
-                            setBlue(out);
-                        }
-                    }
-                    printPlayer(out, mapPiece(out, board, new ChessPosition(row, col)));
+                    drawHighlightColorsMagentaFirst(out, board, row, moveLocs, col);
                 }
             }
         }
         resetColor(out);
+    }
+
+    private static void drawHighlightColorsBlueFirst(PrintStream out, ChessBoard board, int row, Collection<ChessPosition> moveLocs, int col) {
+        if (!moveLocs.isEmpty() && moveLocs.contains(new ChessPosition(row, col))) {
+            if (col % 2 != 0) {
+                setGreen(out);
+            } else {
+                setDarkGreen(out);
+            }
+        } else {
+            if (col % 2 != 0) {
+                setBlue(out);
+            } else {
+                setMagenta(out);
+            }
+        }
+        printPlayer(out, mapPiece(out, board, new ChessPosition(row, col)));
+    }
+
+    private static void drawHighlightColorsMagentaFirst(PrintStream out, ChessBoard board, int row, Collection<ChessPosition> moveLocs, int col) {
+        if (!moveLocs.isEmpty() && moveLocs.contains(new ChessPosition(row, col))) {
+            if (col % 2 != 0) {
+                setDarkGreen(out);
+            } else {
+                setGreen(out);
+            }
+        } else {
+            if (col % 2 != 0) {
+                setMagenta(out);
+            } else {
+                setBlue(out);
+            }
+        }
+        printPlayer(out, mapPiece(out, board, new ChessPosition(row, col)));
     }
 
     private static String mapPiece(PrintStream out, ChessBoard board, ChessPosition pos) {
