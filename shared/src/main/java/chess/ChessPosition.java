@@ -20,10 +20,35 @@ public class ChessPosition {
 
     @Override
     public String toString() {
-        return "ChessPosition{" +
-                "row=" + row +
-                ", col=" + col +
-                '}';
+        String colLetter = "";
+        switch (col) {
+            case 1:
+                colLetter += "a";
+                break;
+            case 2:
+                colLetter += "b";
+                break;
+            case 3:
+                colLetter += "c";
+                break;
+            case 4:
+                colLetter += "d";
+                break;
+            case 5:
+                colLetter += "e";
+                break;
+            case 6:
+                colLetter += "f";
+                break;
+            case 7:
+                colLetter += "g";
+                break;
+            case 8:
+                colLetter += "h";
+                break;
+        }
+
+        return String.format("position %s%s", colLetter, row);
     }
 
     @Override
