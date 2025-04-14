@@ -87,6 +87,7 @@ public class WebsocketHandler {
         ChessGame game = sqlGameDAO.getGameData(command.getGameID()).game();
         ChessGame.TeamColor teamColor = getTeamColor(username, gameData);
         ChessGame.TeamColor teamTurn = game.getTeamTurn();
+
         if (game.getGameOver()) {
             String message = "Error: The game is over. You cannot make a move";
             session.getRemote().sendString(new Gson().toJson(new ErrorMessage(message)));
@@ -132,24 +133,28 @@ public class WebsocketHandler {
         var notif = new NotificationMessage(message);
         connections.broadcast(username, command.getGameID(), notif);
 
-        if (game.isInStalemate(teamColor)) {
+        String enemyUsername = gameData.whiteUsername();
+        if (teamColor.equals(ChessGame.TeamColor.WHITE)) {
+            enemyUsername = gameData.blackUsername();
+        }
+        if (game.isInStalemate(game.getEnemyTeam(teamColor))) {
             message = "You are in stalemate";
-            session.getRemote().sendString(new Gson().toJson(new NotificationMessage(message)));
+            connections.send(enemyUsername, gameData.gameID(), new NotificationMessage(message));
 
-            message = String.format("%s is in stalemate", username);
-            connections.broadcast(username, command.getGameID(), new NotificationMessage(message));
-        } else if (game.isInCheckmate(teamColor)) {
+            message = String.format("%s is in stalemate", enemyUsername);
+            connections.broadcast(enemyUsername, command.getGameID(), new NotificationMessage(message));
+        } else if (game.isInCheckmate(game.getEnemyTeam(teamColor))) {
             message = "You are in checkmate";
-            session.getRemote().sendString(new Gson().toJson(new NotificationMessage(message)));
+            connections.send(enemyUsername, gameData.gameID(), new NotificationMessage(message));
 
-            message = String.format("%s is in checkmate", username);
-            connections.broadcast(username, command.getGameID(), new NotificationMessage(message));
-        } else if (game.isInCheck(teamColor)) {
+            message = String.format("%s is in checkmate", enemyUsername);
+            connections.broadcast(enemyUsername, command.getGameID(), new NotificationMessage(message));
+        } else if (game.isInCheck(game.getEnemyTeam(teamColor))) {
             message = "You are in check";
-            session.getRemote().sendString(new Gson().toJson(new NotificationMessage(message)));
+            connections.send(enemyUsername, gameData.gameID(), new NotificationMessage(message));
 
-            message = String.format("%s is in check", username);
-            connections.broadcast(username, command.getGameID(), new NotificationMessage(message));
+            message = String.format("%s is in check", enemyUsername);
+            connections.broadcast(enemyUsername, command.getGameID(), new NotificationMessage(message));
         }
     }
 

@@ -222,7 +222,7 @@ public class ChessGame {
      * @param myTeam team color
      * @return the color of the opposing team
      */
-    private TeamColor getEnemyTeam(TeamColor myTeam) {
+    public TeamColor getEnemyTeam(TeamColor myTeam) {
         if (myTeam.equals(TeamColor.BLACK)) {
             return TeamColor.WHITE;
         }

@@ -94,7 +94,7 @@ public class Client implements ServerMessageObserver {
     }
 
     public void errorMessageReceived(ErrorMessage error) {
-        System.out.println(SET_TEXT_COLOR_RED + error.getErrorMessage());
+        System.out.println(SET_TEXT_COLOR_BLUE + error.getErrorMessage());
         System.out.println(RESET_TEXT_COLOR);
     }
 }
