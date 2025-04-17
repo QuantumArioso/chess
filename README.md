@@ -1,7 +1,7 @@
 # ♕ BYU CS 240 Chess
 
 This project demonstrates mastery of proper software design, client/server architecture, networking using HTTP and WebSocket, database persistence, unit testing, serialization, and security.
-[Watch the gameplay demo](chessGameplayDemo.mp4)
+[Watch the gameplay demo](https://youtu.be/PcTNly5etfk)
 
 ## 10k Architecture Overview
 
